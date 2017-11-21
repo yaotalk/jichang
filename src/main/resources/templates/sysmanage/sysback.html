@@ -1,0 +1,362 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{${param.pjax}?'layout/empty':'layout/layout'}" >
+		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>系统备份</h1>
+			</div>
+			<div class="col-sm-6" style="margin-left:20%">
+				<!--<div class="row">-->
+					<!--<div class="col-xs-11 label label-lg label-info arrowed-in arrowed-right">-->
+						<!--<b>系统备份</b>-->
+					<!--</div>-->
+				<!--</div>-->
+                <!--<div class="col-sm-6" style="margin-left:10%">-->
+                        <!--<div class="form-group">-->
+                            <!--<div class="col-xs-12" style="margin-left:20%">-->
+                                <!--<div >-->
+                                    <!--<form id="importForm" class="form-horizontal">-->
+                                        <!--<div class="filelarge">-->
+                                            <!--<div class="form-group">-->
+                                                <!--<div class="col-sm-12">-->
+                                                        <!--<input type="file" name="file" id="my-file-input" />-->
+                                                    <!--<div style="text-align:center">-->
+                                                        <!--<button id="export" type="button" class="btn btn-primary ladda-button" data-style="slide-up">导出</button>-->
+                                                        <!--<button type="submit" class="btn btn-primary ladda-button" data-style="slide-up" id="import">导入</button>-->
+                                                        <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#browser" id="remoteImport">远程导入</button>-->
+                                                        <!--&lt;!&ndash;<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#browser">&ndash;&gt;-->
+                                                            <!--&lt;!&ndash;<span class="ace-icon fa fa-search icon-on-right bigger-110"></span>&ndash;&gt;-->
+                                                            <!--&lt;!&ndash;远程导入&ndash;&gt;-->
+                                                        <!--&lt;!&ndash;</button>&ndash;&gt;-->
+                                                    <!--</div>-->
+                                                <!--</div>-->
+                                            <!--</div>-->
+                                        <!--</div>-->
+                                    <!--</form>-->
+                                <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <div class="form-group" style="padding-left: 15%">
+                    <label for="faceset" class="col-sm-2 control-label" style="padding-top:1%;text-align: center">路径</label>
+                    <div class="input-group col-sm-6">
+                        <input type="text" class="form-control" placeholder="具有压缩包的路径" id="path_input" name="path" required="required" readonly="readonly">
+                        <span class="input-group-btn">
+									<button type="button" class="btn btn-purple btn-sm" data-toggle="modal" data-target="#browser">
+										<span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+										浏览
+									</button>
+								</span>
+                    </div>
+                    <div style="margin-left: 25%;margin-top: 3%;">
+                        <button id="export" type="button" class="btn btn-primary ladda-button" data-style="slide-up">导出</button>
+                        <button  class="btn btn-primary ladda-button" data-style="slide-up" id="import">导入</button>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="browser" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="browserModalLabel">选择导入文件路径</h4>
+                            </div>
+                            <div class="modal-body" style="max-height: 690px;">
+                                <div class="form-group">
+                                    <div class="form-group-cell root-select-cell" style="width: 100px">
+                                        <label>磁盘:</label>
+                                        <select id="disk">
+                                        </select>
+                                    </div>
+                                    <div class="form-group-cell folder-select-cell" style="width: 350px">
+                                        <label class="ng-binding">路径</label>
+                                        <input type="text" autocomplete="off" id="path" readonly="readonly">
+                                    </div>
+                                    <div class="form-group-cell form-button form-link">
+                                        <a href="" class="up-folder" id="up-folder">
+                                            <i class="ace-icon fa fa-level-up bigger fa-2x"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="current_folder_path" value="">
+                                <div class="browse-container" id="browse-container">
+                                    <div class="browse-item-row" tabindex="0">
+                                        <div class="file-wrapper browse-item">
+                                            <span class="icon"><i class="menu-icon fa fa-folder-open-o"></i></span>
+                                            <span class="path" data-path="">dir</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" id="path_select_btn">选择</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-group-item">
+                    <h6>日志</h6>
+                    <div id="log_container">
+                    </div>
+                </div>
+                <script th:inline="javascript">
+
+                    var task_status =  [[${status}]];
+                    var import_status = [[${exportStatus}]]
+                </script>
+			<script>
+             $(function(){
+
+               $('#log_container').ace_scroll({size: 200});
+
+               if(task_status == 1){
+                   $('#log_container .scroll-content').append($('<br>')).append($('<span>').text('有任务正在导入，请稍后......'));
+                   $("#import").attr("disabled",true);
+               }
+               if(import_status == 1){
+                   $('#log_container .scroll-content').append($('<br>')).append($('<span>').text('有任务正在导出，请稍后......'));
+                   $("#export").attr("disabled",true);
+               }
+
+               if(task_status == 2){
+                   $('#log_container .scroll-content').append($('<br>')).append($('<span>').text('导入任务成功'));
+               }
+               if(import_status == 2){
+                  var text = '任务备份完成,如浏览器未自动下载,请点击<a href="people/export.zip">备份包</a>下载';
+                  $('#log_container .scroll-content').append($('<br>')).append($('<span>').html(text));
+               }
+                $("#export").on('click',function(){
+                      Ladda.bind('#export');
+                      var l = Ladda.create($("#export")[0]);
+                      l.start();
+                       var socket = new WebSocket('ws://'+window.location.host+'/client');
+                       var stompClient = Stomp.over(socket);
+                       stompClient.connect({}, function(frame){
+                            stompClient.subscribe('/i/tasklog/', function(message){
+                                 $('#log_container .scroll-content').append($('<br>')).append($('<span>').text(message.body));
+                            });
+                       stompClient.subscribe('/i/taskExportStatus/', function(message){
+                                     import_status =  JSON.parse(message.body).status;
+                                     if(import_status == 2){
+                                            $("#export").attr("disabled",false);
+                                            var text = '如浏览器未自动下载,请点击<a href="people/export.zip">备份包</a>下载';
+                                            $('#log_container .scroll-content').append($('<br>')).append($('<span>').html(text));
+                                     }
+                            })
+                     });
+				    $.get('export',function(data){
+						if(data == 'success'){
+						   stompClient.disconnect();
+						    $("#export").attr("disabled",false);
+						    l.stop();
+				            location.href = '/people/export.zip';
+						}
+				   },'text')
+				})
+             });
+                  $('#my-file-input').ace_file_input({
+					style: 'well',
+					no_file: 'Click to choose or drag & drop',
+					droppable: true, //html5 browsers only
+					btn_choose:"上传zip压缩包",
+					thumbnail: 'large', //html5 browsers only
+					maxSize: 10240*1024*1024, //~100 KB
+					allowExt:  ['zip']
+					//allowMime: ['application/zip'] //html5 browsers only
+				});
+				 $(".ace-file-container").attr("data-title",'上传zip压缩包').css("height","150px");
+
+                $('#path_select_btn').click(function(e){
+                     $('#path_input').val($('#path').val());
+                     $('#browser').modal('hide');
+                });
+//                 $("#importForm").on("submit", function(ev) {
+//					if($(":file").val() == ""){
+//					 $.alert({
+//						title: '提示',
+//						content: '选择压缩包',
+//					  });
+//						ev.preventDefault();
+//						return;
+//					};
+//                  Ladda.bind('#import');
+//                  var l = Ladda.create($("#import")[0]);
+//                  l.start();
+//                  $('#log_container .scroll-content').append($('<br>')).append($('<span>').text('正在上传压缩包......'));
+//                  var socket = new WebSocket('ws://'+window.location.host+'/client');
+//                  var stompClient = Stomp.over(socket);
+//                  stompClient.connect({}, function(frame){
+//                            stompClient.subscribe('/i/tasklog/', function(message){
+//                                 $('#log_container .scroll-content').append($('<br>')).append($('<span>').text(message.body));
+//                            });
+//                             stompClient.subscribe('/i/taskStatus/', function(message){
+//                                     task_status =  JSON.parse(message.body).status;
+//                                     if(task_status == 2){
+//                                            $("#import").attr("disabled",false);
+//                                     }
+//                                 })
+//                 });
+                     $("#import").on('click',function () {
+                         if($("#path").val() === "" || $("#path").val().trim() ===""){
+                             $.alert({
+                                title: '提示',
+                                content: '请选择路径',
+                              });
+                             return;
+                         }
+                         Ladda.bind('#import');
+                         var l = Ladda.create($("#import")[0]);
+                         l.start();
+                         $('#log_container .scroll-content').append($('<br>')).append($('<span>').text('正在导入，请稍后......'));
+                         var socket = new WebSocket('ws://'+window.location.host+'/client');
+                         var stompClient = Stomp.over(socket);
+                         stompClient.connect({}, function(frame){
+                             stompClient.subscribe('/i/tasklog/', function(message){
+                                 $('#log_container .scroll-content').append($('<br>')).append($('<span>').text(message.body));
+                             });
+                             stompClient.subscribe('/i/taskStatus/', function(message){
+                                 task_status =  JSON.parse(message.body).status;
+                                 if(task_status == 2){
+                                     $("#import").attr("disabled",false);
+                                 }
+                             })
+                         });
+                        $.post('import',{'filepath':$("#path").val()},function (data) {
+                            stompClient.disconnect();
+                            $.alert({
+                                title: '提示',
+                                content: data
+                            });
+                            l.stop();
+                        },'text')
+                     
+                     })
+
+//			    var data = 	$('#importForm').serialize();
+//			    $("#importForm").ajaxSubmit({
+//						type: 'post',
+//						url: '/import',
+//						data: data,
+//						dataType:"text",
+//						success: function(data) {
+//						if(data == "success"){
+//						       $.alert({
+//								title: '提示',
+//								content: '导入成功',
+//							  });
+//					    }
+//					    else{
+//					        $.alert({
+//								title: '提示',
+//								content: '导入失败',
+//							  });
+//					    }
+//                            stompClient.disconnect();
+//                            l.stop();
+//                            return;
+//						},
+//						error:function(){
+//							$.alert("system error");
+//							l.stop();
+//						 }
+//					});
+//						 return false; // 阻止表单自动提交事件
+//						 ev.preventDefault();
+//				  })
+
+             //remote import
+             $(".browse-container").on("click", ".browse-item-row", function(e){
+                 $(".browse-item-row").removeClass('selected');
+                 $(this).addClass('selected');
+                 var path = $(this).find(".path").data('path');
+                 $("#path").val(path);
+             })
+
+             $(".browse-container").on("dblclick", ".browse-item-row", function(e){
+                 var path = $(this).find(".path").data('path');
+                 listDir(path);
+             })
+
+             $("#disk").change(function(e){
+                 listDir($(this).val());
+                 $("#path").val("");
+             });
+
+             $("#up-folder").click(function(e){
+                 e.preventDefault();
+                 var current_folder = $('#current_folder_path').val();
+                 if(isRoot(current_folder)){
+                     return;
+                 }
+                 var parent = current_folder.substring(0,current_folder.lastIndexOf("\\"));
+                 listDir(parent);
+                 if(isRoot(parent)){
+                     $("#path").val("");
+                 }else{
+                     $("#path").val(parent);
+                 }
+             });
+
+             $('#path_select_btn').click(function(e){
+                 $('#path_input').val($('#path').val());
+                 $('#browser').modal('hide');
+             });
+
+             function isRoot(path){
+                 if(path.indexOf("\\") == -1){
+                     return true;
+                 }
+                 var path_ary = path.split("\\");
+                 if(path_ary.length == 1 || path_ary[1] == ""){
+                     return true;
+                 }
+                 return false;
+             }
+
+             $.getJSON("face/diskRoot", function(json){
+                 $("#disk").empty();
+                 for(var disk of json){
+                     $("#disk").append($('<option>', {
+                         value: disk
+                     }).text(disk));
+                 }
+
+                 $("#disk").trigger('change');
+             });
+
+             function listDir(folder){
+                 $.getJSON("face/listDir", {parent: folder}, function(json){
+                     $('#current_folder_path').val(folder);
+                     $("#browse-container").empty();
+                     for(var dir of json){
+                         $("#browse-container").append(
+                             $('<div>', {
+                                 'class': "browse-item-row",
+                                 tabindex: "0"
+                             }).append(
+                                 $('<div>', {
+                                     'class': "file-wrapper browse-item"
+                                 }).append(
+                                     $('<span>', {'class':'icon'}).append($('<i>', {'class': "menu-icon fa fa-folder-open-o"}))
+                                 ).append(
+                                     $('<span>', {
+                                         'class': 'path',
+                                         'data-path': dir
+                                     }).text(dir.substring(dir.lastIndexOf("\\")+1))
+                                 )
+                             )
+                         );
+                     }
+
+                     if(isRoot(folder)){
+                         $("#up-folder").addClass("disabled");
+                     }
+                 })
+             }
+			</script>
+		</div>
+
+	</html>	

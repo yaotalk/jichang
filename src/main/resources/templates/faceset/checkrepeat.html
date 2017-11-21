@@ -1,0 +1,218 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+   		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>检测重复图片 </h1>
+			</div>
+			<div class="row">
+				<div th:if="${checkRepeatTaskContext != null}">
+				<div class="col-sm-6">
+					<div class="alert alert-success" role="alert">人脸库&nbsp;<span style="font-weight:bold;" th:text="${checkRepeatTaskContext.faceSetName}"></span>&nbsp;检测重复图片所需数据正在准备中！</div>
+					<div>
+						<div id="stop_init" style="display:none">
+							  <button class="btn btn-primary">停止</button>
+						 </div>
+					</div>
+				</div>
+				</div>
+				<div class="col-sm-6" th:if="${checkRepeatTaskContext == null}" th:hidden="${checkRepeatTask != null && checkRepeatTask.taskId != null} " id="new_task_form">
+					<form class="form-horizontal" id="import_form" action="checkIfHasNotDetected" method="post">
+						<div class="form-group">
+						    <label for="faceset" class="col-sm-2 control-label">人脸库</label>
+						    <div class="input-group col-sm-6">
+						      <select  class="form-control" id="faceset"  name="faceSetToken" required="required">
+						      </select>
+						    </div>
+						  </div>
+					
+						<div class="form-group">
+						    <div class="col-sm-offset-2 col-sm-10">
+						      <button type="submit" class="btn btn-default" id="import_btn">开始检测</button>
+						    </div>
+						</div>
+					</form>
+					
+				</div>
+			</div>
+								
+			<div th:if="${checkRepeatTask != null && checkRepeatTask.taskId != null && checkRepeatTaskContext == null}" id="current_task" >
+				<div class="col-sm-6">
+				<div class="alert alert-success" th:if="${checkRepeatTask != null}" role="alert" style="display:none" id="nonrepeat">人脸库&nbsp;<span id="facesetName"></span>&nbsp;暂无重复图片！</div>
+				<div class="panel panel-default" id="progressBar" th:hidden="${checkRepeatTask.totalNum <= 0}">
+							<div class="panel-heading" th:text="${checkRepeatTask.faceSetName}">任务名</div>
+							<div class="list-group">
+								<div class="list-group-item">
+									<h6><span id="repeat_task_progress_info" th:text="|进度  (${checkRepeatTask.processedNum}/${checkRepeatTask.totalNum})|">(/)</span><span id="stillRepeat"></span></h6>
+									<div class="progress pos-rel progress-large" id="repeat_task_progress" data-percent="66%" th:data-percent="${#numbers.formatPercent(checkRepeatTask.processedNum*1f/checkRepeatTask.totalNum, 0, 2)}">
+										<div class="progress-bar progress-bar-striped active" th:style="|width: ${checkRepeatTask.processedNum*100f/checkRepeatTask.totalNum}%;|"></div>
+									</div>
+								</div>
+							</div>
+				</div>
+						<div id="new_task" th:hidden="${checkRepeatTask.taskStatus!=2}">
+							<button class="btn btn-primary">新检测</button>
+						</div>
+						<div id="stop_btn" th:hidden="${checkRepeatTask.taskStatus!=1}">
+							  <button class="btn btn-primary">停止</button>
+						 </div>
+				</div>
+
+			</div>
+			
+			<input type="hidden" th:if="${checkRepeatTask} != null" name="taskStatus" id="taskStatus" th:value="${taskStatus}" />
+
+
+					<script type="text/javascript">
+							$(function(){
+								
+								$('ul.nav.nav-list li.active').removeClass('active');
+							    $('#checkRepeat').addClass('active');
+							    
+							    
+								$.getJSON('/faceset',function(json){
+									for(var faceset of json){
+										$('select[name="faceSetToken"]').append(
+												$("<option>",{
+													value: faceset.token
+												}).text(faceset.name)
+										);
+									}
+								});
+								$('#new_task').click(function(e){
+									$('#current_task').hide();
+									$('#new_task_form').show();
+								});
+								
+								
+								
+								
+
+								
+								if('[[${checkRepeatId}]]' != '-1' && '[[${checkRepeatId}]]' != ''){
+								
+								
+								var socket = new WebSocket('ws://'+window.location.host+'/client');
+								var stompClient = Stomp.over(socket);
+								
+
+								stompClient.connect({}, function(frame){
+
+									stompClient.subscribe('/w/task/'+'[[${checkRepeatId}]]', function(message){
+						    		var task = JSON.parse(message.body);
+									
+									if(task.taskName == 'stopInit'){
+										location.reload(true);
+									}
+						    		if(task.totalNum == 0 && task.taskStatus == 2){
+									    $("#nonrepeat").show();
+										$("#facesetName").text(task.faceSetName+'('+task.faceSetToken+')');
+										$("#progressBar").hide();
+										$("#stop_btn").hide();
+										$("#new_task").show();
+										return;
+						    		}
+									if(task.totalNum > 0){
+										$("#progressBar").show();
+									}
+									if(!task.processedNum){
+										location.reload(true);
+									}
+									var progress = (task.processedNum*100/task.totalNum).toFixed(2) +'%';
+									
+										var info = "进度  ("+task.processedNum+"/"+task.totalNum+")";
+										$('#repeat_task_progress_info').text(info);
+										
+										$("#repeat_task_progress").attr('data-percent',progress);
+										$("#repeat_task_progress .progress-bar").css('width', progress);
+										if(task.taskStatus==2){
+											if(task.stillRepeatNumber > 0){
+												$("#stillRepeat").text(" 处理完毕，还剩余"+task.stillRepeatNumber+"条未处理.");
+											}
+									    	progress_done();
+										}
+								});	
+								if([[${checkRepeatTask!=null && checkRepeatTask.taskStatus != 2}]]){
+									$.getJSON('/face/getCheckRepeatTask',function(task){
+										if(task.taskStatus==2){
+											var progress = (task.processedNum*100/task.totalNum).toFixed(2) +'%';
+											
+											var info = "进度  ("+task.processedNum+"/"+task.totalNum+")";
+											$('#repeat_task_progress_info').text(info);
+											
+											$("#repeat_task_progress").attr('data-percent',progress);
+											$("#repeat_task_progress .progress-bar").css('width', progress);
+											if(task.stillRepeatNumber > 0){
+												$("#stillRepeat").text(" 处理完毕，还剩余"+task.stillRepeatNumber+"条未处理.");
+											}
+											progress_done();
+											return;
+										}else{
+											setTimeout(function(){
+												$.getJSON('/face/getCheckRepeatTask',function(task){
+													if(task.taskStatus==2){
+													var progress = (task.processedNum*100/task.totalNum).toFixed(2) +'%';
+													
+													var info = "进度  ("+task.processedNum+"/"+task.totalNum+")";
+													$('#repeat_task_progress_info').text(info);
+													
+													$("#repeat_task_progress").attr('data-percent',progress);
+													$("#repeat_task_progress .progress-bar").css('width', progress);
+														if(task.stillRepeatNumber > 0){
+															$("#stillRepeat").text(" 处理完毕，还剩余"+task.stillRepeatNumber+"条未处理.");
+														}
+														progress_done();
+														return;
+													}
+												});
+											},1000);
+										}
+										});
+										}
+									
+								$('#stop_btn').click(function(e){
+											stompClient.send('/app/c/stopcheckrepeat/', function(message){
+												
+											})
+											$('#stop_btn').hide();
+											$("#new_task").show();
+								});
+								});	
+								};
+								
+								
+
+								
+							});
+					    function progress_done(){
+					    	$('#new_task').show();
+							$('#stop_btn').hide();
+					    	$("#repeat_task_progress .progress-bar").removeClass('active').removeClass('progress-bar-striped').addClass('progress-bar-success');
+
+					    }							
+						
+					</script>
+					<script type="text/javascript" th:if="${checkRepeatTask!=null && (checkRepeatTask.taskStatus==2 || checkRepeatTask.processedNum == checkRepeatTask.totalNum)} ">
+						progress_done();
+						if([[${checkRepeatTask.totalNum}]] == 0){
+							$("#nonrepeat").show();
+								$("#facesetName").text('[[${checkRepeatTask.faceSetName}]]'+'([[${checkRepeatTask.faceSetToken}]])');
+								$("#progressBar").hide();
+								$("#stop_btn").hide();
+								$("#new_task").show();
+						}
+						
+						if([[${checkRepeatTask.stillRepeatNumber}]] > 0){
+							$("#stillRepeat").text(" 处理完毕，还剩余"+[[${checkRepeatTask.stillRepeatNumber}]]+"条未处理。");
+						}
+						
+						
+					</script>
+					
+					
+					
+		</div>
+
+	</html>	

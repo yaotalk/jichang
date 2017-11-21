@@ -1,0 +1,159 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+   		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>检测重复图片 </h1>
+			</div>
+			<div class="row col-sm-8">
+				<div th:if="${checkRepeatTaskContext != null}">
+				<div>
+					<div class="alert alert-success" role="alert">
+							步骤说明：<br/>  
+										  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.查询人脸库中图片是否计算了md5，如果没有先计算md5.<br/>
+									      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.查询出md5值一样的图片，进行比较。
+							<br/>
+							
+					
+					</div>
+					<div class="alert alert-info" >
+					&nbsp;&nbsp;&nbsp;状态：<span id="taskContent" th:text="${checkRepeatTaskContext.statusText}"></span>
+					</div>
+					
+
+				</div>
+				</div>
+				<div th:if="${checkRepeatTaskContext != null}">
+					<div class="panel panel-default" id="progressBar" th:hidden="${task.totalNum <= 0}">
+							<div class="panel-heading">人脸库名称：<span  th:text="${checkRepeatTaskContext.faceSetName}"></span></div>
+							
+							<div class="list-group">
+								<div class="list-group-item">
+									<h6><span id="repeat_task_progress_info" th:text="|进度  (${task.processedNum}/${task.totalNum})|">(/)</span><span id="stillRepeat"></span></h6>
+									<div class="progress pos-rel progress-large" id="repeat_task_progress" data-percent="66%" th:data-percent="${#numbers.formatPercent(task.processedNum*1f/task.totalNum, 0, 2)}">
+										<div class="progress-bar progress-bar-striped active" th:style="|width: ${task.processedNum*100f/task.totalNum}%;|"></div>
+									</div>
+								</div>
+					</div>
+				</div>
+					<div>
+						<div id="stop_init" style="display:none">
+							  <button class="btn btn-primary">停止</button>
+						 </div>
+					</div>
+				</div>
+				
+			</div>
+								
+
+					
+					<script>
+						var isStopClicked = false;
+						function progress_done(){
+					    	$("#repeat_task_progress .progress-bar").removeClass('active').removeClass('progress-bar-striped').addClass('progress-bar-success');
+
+					    }	
+
+						function dealProgressBar(task,addClass){
+										$("#progressBar").removeAttr("hidden");
+										if(addClass){
+										$("#repeat_task_progress .progress-bar").removeClass('progress-bar-success').addClass('progress-bar-striped').addClass('active');}
+										var progress = (task.processedNum*100/task.totalNum).toFixed(2) +'%';
+									
+										var info = "进度  ("+task.processedNum+"/"+task.totalNum+")";
+										$('#repeat_task_progress_info').text(info);
+										
+										$("#repeat_task_progress").attr('data-percent',progress);
+										$("#repeat_task_progress .progress-bar").css('width', progress);
+										if(task.taskStatus==2 || task.processedNum == task.totalNum){
+									    	progress_done();
+										}
+						}
+						
+						$(function(){
+							$('ul.nav.nav-list li.active').removeClass('active');
+							$('#checkRepeat').addClass('active');
+							var socket = new WebSocket('ws://'+window.location.host+'/client');
+							var stompClient = Stomp.over(socket);
+								stompClient.connect({}, function(frame){
+									stompClient.subscribe('/w/task/'+'[[${md5InitTaskId}]]', function(message){
+						    		var task = JSON.parse(message.body);
+									if(task.taskName == 'findMd5EmptyNum'){
+										$("#taskContent").text("正在查询没有记录图片md5的数量");
+									}else if(task.taskName == 'md5AllHave'){
+										$("#taskContent").text("所有的图片都记录了md5，开始统计md5相同的图片记录");
+									}else if(task.taskName == 'saveMd5Record'){
+										$("#taskContent").text("正在保存没有md5记录的数据到待处理记录表");
+										dealProgressBar(task,false);
+									}else if(task.taskName == "caculatePicMd5"){
+										$("#taskContent").text('正在计算图片的md5值');
+										dealProgressBar(task,true);
+									}else if(task.taskName == "findRepeat"){
+										$("#taskContent").text('所有的图片都记录了md5，开始统计md5相同的图片记录');
+									}else if(task.taskName == "insertReapt"){
+										if(task.queryDataFinished && !isStopClicked){
+											location.reload(true);
+										}
+										$("#taskContent").text('找到重复的图片，正在插入待处理表');
+										dealProgressBar(task,true);
+									}else if(task.taskName == "stopInit"){
+										location.reload(true);
+									}
+									/*if(!task.dataIniting){
+										location.reload(true);
+										return;
+									}	*/								
+									});
+									$.getJSON('/face/getTaskStatus',function(json){
+										if(!json.dataIniting&&!isStopClicked){
+											location.reload(true);
+											return;
+										}else{
+											$('#stop_init').show();
+											setTimeout(function(){
+												$.getJSON('/face/getTaskStatus',function(json){
+													if(!json.dataIniting&&!isStopClicked){
+														location.reload(true);
+														return;
+													}});
+											},1000);
+										}
+										});
+								});	
+								/*socket.onopen = function(){
+										
+										$.getJSON('/face/getTaskStatus',function(json){
+										if(!json.dataIniting){
+											//location.reload(true);
+											return;
+										}else{
+											$('#stop_init').show();
+											setTimeout(function(){
+												$.getJSON('/face/getTaskStatus',function(json){
+													if(!json.dataIniting){
+														//location.reload(true);
+														return;
+													}});
+											},1000);
+										}
+										});
+								};*/
+							$('#stop_init').click(function(e){
+								isStopClicked = true;
+								stompClient.send('/app/c/stopInitMD5/', function(message){
+											//stompClient.disconnect();
+											//alert(message);
+								});
+								
+							});
+								
+
+
+						});
+					</script>
+					
+		</div>
+
+	</html>	

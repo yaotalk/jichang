@@ -1,0 +1,237 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+   		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>检测重复图片 </h1>
+			</div>
+				<form action="startCheckRepeat" id="startForm" method="post">
+					<input type="hidden" name="faceSetToken" id="faceSetToken" th:value="${faceSetToken}"/>
+				</form>
+			<div class="table-header">
+				有重复图片的人脸列表
+			</div>
+			<div id="toolbar">
+				
+				<div class="dt-buttons btn-overlap btn-group">
+
+					<div th:if="${facesetName != null}" style="float:left;width:420px;"><span>人脸库：</span>
+					<span th:text="${facesetName}"></span>
+					<button class="btn btn-primary" id="start_clear">开始去重</button>
+					<button class="btn btn-default" id="cancel_clear">取消去重</button>
+					<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+						<span> <i class="fa fa-refresh bigger-110 blue"></i>
+                    <span class="hidden">重新加载</span></span>
+					</a>
+					</div>
+					
+				</div>
+			</div>
+			<div>
+				<table id="table"
+					   data-toolbar="#toolbar"
+					   data-url="/face/queryRepeat"
+					   data-side-pagination="server"
+					   data-page-list="[10, 20, 50, 100,All]"
+					   data-pagination="true"
+					   data-search="true"
+					   data-show-columns="true"
+					   data-show-export="true" >
+					<thead>
+					<tr>
+						<th data-field="index" data-formatter="indexFormatter" >序号</th>
+						<th data-field="id" >人脸ID</th>
+						<th data-field="name">姓名</th>
+						<th data-field="employeeId">工号</th>
+						<th data-field="sex" data-formatter="actionFormatter" >性别</th>
+						<th data-field="idCard">身份证号</th>
+						<th data-field="phoneNumber">电话</th>
+						<th data-field="picMd5">图片md5</th>
+						<th data-field="isStore" data-formatter="storeFormatter">保留</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
+			<style>
+				.control-label{
+					display: inline-block;
+				}
+			</style>
+						<div class="modal fade" id="edit_modal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+				<div class="modal-dialog" role="document"  >
+					<div class="modal-content" style="width: 150%;margin-left: -20%;">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="editModalLabel">详情</h4>
+						</div>
+						<div class="modal-body">
+							<form id="edit_form" action="/face/saveTmp" class="form-horizontal" method="post">
+								<input type="hidden" name="taskId" th:value="${checkRepeatId}"/>
+								<input type="hidden" name="picId" id="picId"/>
+								
+								<div style="float:left;width: 40%;margin-top: 30px;margin-left: 80px;">
+									<div class="form-group">
+										<div class="col-sm-9" >
+											<img src="#" id="peopleImg" style="max-width: 250px; max-height: 300px">
+										</div>
+									</div>
+								</div>
+								<div style="width: 50%;margin-top: 30px;float: right;">
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label">姓名:</label>
+										<div class="col-sm-9">
+											<span class="control-label" id="name" ></span>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label">性别:</label>
+										<div class="col-sm-9">
+											<span class="control-label" id="sex" ></span>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label">身份证号:</label>
+										<div class="col-sm-9">
+											<span class="control-label" id="idCard" ></span>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label">工号:</label>
+										<div class="col-sm-9">
+											<span class="control-label" id="employeeId"></span>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label">电话:</label>
+										<div class="col-sm-9">
+											<span class="control-label" id="phoneNumber"></span>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-3 control-label"><span style="color:red">*</span>是否保存:</label>
+										<div class="col-sm-9">
+											<select name="isStore" id="isStore" class="chosen-select form-control" required="required">
+												<option value="1">是</option>
+												<option value="0">否</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group" style="float: right;padding-right: 12%;">
+										<button type="submit" class="btn btn-primary" id="edit_submit">保存</button>
+										<button data-dismiss="modal" class="btn btn-default" id="edit_close">关闭</button>
+									</div>
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+					<script type="text/javascript">
+				function indexFormatter(value, row, index){
+					return index+1;
+				}	
+				
+				function storeFormatter(value,row,index){
+					if(value=='1')
+						return '是';
+					else
+						return '否'
+				}
+				
+				function actionFormatter(value, row, index) {
+      				 if(value == '0')
+						return '男'
+					else if(value == '1'){
+						return '女'
+						}
+				    else return '未知';
+    			}
+				$(function(){
+					
+	    			 $(".fa-refresh").parents("a").on('click',function(){
+						 $('#table').bootstrapTable('refresh');
+					 })
+					 $("#edit_form").submit(function(){   
+            		$(this).ajaxSubmit(function (responseText, statusText, xhr, $form){      
+            			console.log(responseText);
+						if(responseText.ret=='already'){
+							$.alert({
+	            		    	title: '保存失败',
+	            		    	content: 'md5相同的图片只能选择保留一张',
+	            		    });
+						}
+						$("#edit_modal").modal('hide');
+						$('#table').bootstrapTable('refresh');
+					});   
+            		return false;   //防止表单自动提交  
+        			});  
+				
+					$('ul.nav.nav-list li.active').removeClass('active');
+					$('#checkRepeat').addClass('active');
+					
+					$("#start_clear").click(function(){
+					
+					$.confirm({
+					content:"将会删掉图片内容一样的人脸，相同的图片只保留一张，请确认？",
+					onclick: function(s) {
+ 							 if (s) {
+ 							  $("#startForm").submit();
+ 							 }
+ 							},
+					buttons: {"确认":function(){
+						$("#startForm").submit();
+					},
+						'取消': function(){
+								return;
+						}},
+					title:"确认清除"});
+					
+					
+					
+					});
+					
+						
+					
+					$('#cancel_clear').click(
+						function(){
+							$("#startForm").attr('action','/face/cancelCheckRepeat').submit();
+						}
+					);
+				
+					$('#table').bootstrapTable({
+					 queryParams: function(params){
+						 params.faceSetToken = $("#faceSetToken").val();
+						 return params;
+					 },
+					 onDblClickRow:function(row){
+					 	  modelShow(row);
+					 }
+				});
+				
+				    function modelShow(row){
+    			     var face =  row;
+					$('#edit_modal #picId').val(face.id);
+					$('#edit_modal #imgpath').text(face.imgpath);
+					$('#edit_modal #name').text(face.name);
+					$('#edit_modal #employeeId').text(face.employeeId);
+					$('#edit_modal #idCard').text(face.idCard);
+					$('#edit_modal #phoneNumber').text(face.phoneNumber);
+					//$("#peopleImg").attr("src","/people/"+face.imgpath);
+					$("#peopleImg").attr("src",face.imgUrl);
+					$("#sex").text(actionFormatter(face.sex));
+					$('#isStore').val(face.isStore)
+					$('#edit_modal').modal('show');
+					
+    			 }
+							});						
+					</script>
+
+		</div>
+
+	</html>	

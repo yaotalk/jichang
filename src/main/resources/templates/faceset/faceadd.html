@@ -1,0 +1,178 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+<div layout:fragment="sidebar" th:replace="layout/sidebar">
+</div>
+<div layout:fragment="content" th:fragment="content">
+
+	<style type="text/css">
+	@media screen and (min-width: 1367px) {
+			 .filelarge {
+				float:left;
+				width: 30%;
+				margin-top: 30px;
+				margin-left:-5%;
+			 }
+			  .inputlarge{
+				width: 50%;
+				margin-top: 30px;
+				float: right;
+				margin-right:20%
+			 }
+		 }
+		 	@media screen and (max-width: 1367px) {
+			 .filelarge {
+				float:left;
+				width: 40%;
+				margin-top: 30px;
+				margin-left:-20%;
+			 }
+			  .inputlarge{
+				width: 80%;
+				margin-top: 30px;
+				float: right;
+			 }
+		 }
+</style>
+	<!-- #section:elements.form -->
+	<div class="row">
+		<div class="col-sm-12">
+			<!--<div class="widget-box">-->
+			<div class="widget-body">
+				<!--<div class="widget-main">-->
+				<div class="form-group">
+					<div class="col-xs-8" style="margin-left:20%">
+						<div >
+							<form id="addform" class="form-horizontal">
+								<div class="filelarge">
+									<div class="form-group">
+										<div class="col-sm-12">
+											<input type="file" name="myfile" id="my-file-input" />
+										</div>
+									</div>
+								</div>
+								<div class="inputlarge">
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">姓名:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="name" required="required">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">性别:</label>
+										<div class="col-sm-9">
+											<select name="sex" class="chosen-select form-control" required="required">
+												<option value="1">男</option>
+												<option value="0">女</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">工号:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="employeeId" required="required">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">身份证号:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="idCard">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">电话:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="phoneNumber">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">人脸库:</label>
+										<div class="col-sm-9">
+											<select class="chosen-select form-control" th:remove="none" name="facesetToken" required="required" >
+												<option th:each="faceSet:${faceSets}"
+														th:value="${faceSet.token}" th:text="${faceSet.name}">/option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group" style="float: right;padding-right: 12%;">
+										<button type="submit" class="btn btn-primary ladda-button" data-style="slide-up" id="add_submit">保存</button>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!--</div>-->
+					</div>
+					<!--</div>-->
+				</div>
+			</div>
+
+		</div>
+		<script type="text/javascript">
+		 $(function(){
+		        $.ajaxSetup({ cache: false });
+				var data = 	$('#addform').serialize();
+				Ladda.bind('button[type=submit]');
+				var l = Ladda.create($("button[type='submit']")[0]);
+				 $("#addform").on("submit", function(ev) {
+					if($(":file").val() == ""){
+					 $.alert({
+						title: '提示',
+						content: '选择图片',
+					  });
+ 					    l.start();
+						ev.preventDefault();
+						return;
+					}
+
+					$("#addform").ajaxSubmit({
+								type: 'post',
+								url: '/face',
+								data: data,
+								dataType:"text",
+								success: function(data) {
+									if(data == "success"){
+										$("#addform").resetForm();
+										$('#my-file-input').ace_file_input('reset_input');
+										$.alert("注册成功");
+										l.stop();
+										return;
+									}
+									else{
+										 $.alert(data);
+										 l.stop();
+									}
+								},
+								error:function(){
+								    $.alert("system error");
+								    l.stop();
+								 }
+							});
+						 return false; // 阻止表单自动提交事件
+					ev.preventDefault();
+						 })
+			 $('#my-file-input').ace_file_input({
+					style: 'well',
+					no_file: 'Click to choose or drag & drop',
+					droppable: true, //html5 browsers only
+					btn_choose:"上传图片",
+					thumbnail: 'large', //html5 browsers only
+					maxSize: 5*1024*1024, //~100 KB
+					allowExt:  ['jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'bmp'],
+					allowMime: ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/tif', 'image/tiff', 'image/bmp'] //html5 browsers only
+				}).on('change',function(e){
+
+				}).on('file.error.ace', function(e, info) {
+				     //e.preventDefault();
+				 })
+				$(".remove").on('click',function(){
+
+				})
+				$(".ace-file-container").attr("data-title",'上传图片').css("height","200px")
+			});
+
+			function reset(ev){
+			 alert()
+			  ev.preventDefault();
+			}
+		</script>
+	</div>
+</div>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE div >
+<!-- <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"> -->
+
+<div xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" id="navbar" class="navbar navbar-default h-navbar ace-save-state" th:fragment="navbar">
+	<div class="navbar-container ace-save-state" id="navbar-container">
+		<div class="navbar-header pull-left">
+			<!-- #section:basics/navbar.layout.brand -->
+			<a href="#" class="navbar-brand">
+				<small>
+					<i class="fa fa-leaf"></i>
+					小视科技视频监控平台
+				</small>
+			</a>
+
+			<!-- /section:basics/navbar.layout.brand -->
+
+			<!-- #section:basics/navbar.toggle -->
+
+			<!-- /section:basics/navbar.toggle -->
+		</div>
+		
+		<nav role="navigation" class="navbar-menu pull-left collapse navbar-collapse">
+		  <ul class="nav navbar-nav">
+		
+		    <!-- <li>
+		      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+		        item # 1
+		      </a>
+		      <ul class="dropdown-menu dropdown-light-blue dropdown-caret">
+		        optional submenu items
+		      </ul>
+		    </li> -->
+		
+		    <li data-nav="face"><a href="/faceset" class="pjax">人脸库管理</a></li>
+		    <li data-nav="sys"><a href="/camera" class="pjax">系统管理</a></li>
+		    <li data-nav="str"><a href="/strategy" class="pjax">布控管理</a></li>
+		
+		  </ul>
+		
+		  <!-- you can also have a form here -->
+		 </nav>
+
+		<!-- #section:basics/navbar.dropdown -->
+		<div class="navbar-buttons navbar-header pull-right" role="navigation">
+			<ul class="nav ace-nav">
+				<!--<li class="grey dropdown-modal">-->
+					<!--<a data-toggle="dropdown" class="dropdown-toggle" href="#">-->
+						<!--<i class="ace-icon fa fa-tasks"></i>-->
+						<!--<span class="badge badge-grey">4</span>-->
+					<!--</a>-->
+
+					<!--<ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">-->
+						<!--<li class="dropdown-header">-->
+							<!--<i class="ace-icon fa fa-check"></i>-->
+							<!--4 Tasks to complete-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-content">-->
+							<!--<ul class="dropdown-menu dropdown-navbar">-->
+								<!--<li>-->
+									<!--<a href="#">-->
+										<!--<div class="clearfix">-->
+											<!--<span class="pull-left">Task Name</span>-->
+											<!--<span class="pull-right">65%</span>-->
+										<!--</div>-->
+
+										<!--<div class="progress progress-mini">-->
+											<!--<div style="width:65%" class="progress-bar"></div>-->
+										<!--</div>-->
+									<!--</a>-->
+								<!--</li>-->
+							<!--</ul>-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-footer">-->
+							<!--<a href="#">-->
+								<!--See tasks with details-->
+								<!--<i class="ace-icon fa fa-arrow-right"></i>-->
+							<!--</a>-->
+						<!--</li>-->
+					<!--</ul>-->
+				<!--</li>-->
+
+				<!--<li class="purple dropdown-modal">-->
+					<!--<a data-toggle="dropdown" class="dropdown-toggle" href="#">-->
+						<!--<i class="ace-icon fa fa-bell icon-animated-bell"></i>-->
+						<!--<span class="badge badge-important">8</span>-->
+					<!--</a>-->
+
+					<!--<ul class="dropdown-menu-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close">-->
+						<!--<li class="dropdown-header">-->
+							<!--<i class="ace-icon fa fa-exclamation-triangle"></i>-->
+							<!--8 Notifications-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-content">-->
+							<!--<ul class="dropdown-menu dropdown-navbar navbar-pink">-->
+								<!--<li>-->
+									<!--<a href="#">-->
+										<!--<div class="clearfix">-->
+											<!--<span class="pull-left">-->
+												<!--<i class="btn btn-xs no-hover btn-pink fa fa-comment"></i>-->
+												<!--New Comments-->
+											<!--</span>-->
+											<!--<span class="pull-right badge badge-info">+12</span>-->
+										<!--</div>-->
+									<!--</a>-->
+								<!--</li>-->
+							<!--</ul>-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-footer">-->
+							<!--<a href="#">-->
+								<!--See all notifications-->
+								<!--<i class="ace-icon fa fa-arrow-right"></i>-->
+							<!--</a>-->
+						<!--</li>-->
+					<!--</ul>-->
+				<!--</li>-->
+
+				<!--<li class="green dropdown-modal">-->
+					<!--<a data-toggle="dropdown" class="dropdown-toggle" href="#">-->
+						<!--<i class="ace-icon fa fa-envelope icon-animated-vertical"></i>-->
+						<!--<span class="badge badge-success">5</span>-->
+					<!--</a>-->
+
+					<!--<ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">-->
+						<!--<li class="dropdown-header">-->
+							<!--<i class="ace-icon fa fa-envelope-o"></i>-->
+							<!--5 Messages-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-content">-->
+							<!--<ul class="dropdown-menu dropdown-navbar">-->
+								<!--<li>-->
+									<!--<a href="#" class="clearfix">-->
+										<!--<img src="/avatars/ava.png" class="msg-photo" alt="Alex's Avatar" />-->
+										<!--<span class="msg-body">-->
+											<!--<span class="msg-title">-->
+												<!--<span class="blue">Alex:</span>-->
+												<!--Message Summary-->
+											<!--</span>-->
+
+											<!--<span class="msg-time">-->
+												<!--<i class="ace-icon fa fa-clock-o"></i>-->
+												<!--<span>Message Time</span>-->
+											<!--</span>-->
+										<!--</span>-->
+									<!--</a>-->
+								<!--</li>-->
+							<!--</ul>-->
+						<!--</li>-->
+
+						<!--<li class="dropdown-footer">-->
+							<!--<a href="inbox.html">-->
+								<!--See all messages-->
+								<!--<i class="ace-icon fa fa-arrow-right"></i>-->
+							<!--</a>-->
+						<!--</li>-->
+					<!--</ul>-->
+				<!--</li>-->
+
+				<!-- #section:basics/navbar.user_menu -->
+				<div class="modal fade" id="modal2" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+										aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title" id="editModalLabel">用户操作</h4>
+							</div>
+							<div class="user-body">
+								<form id="user-form" class="form-horizontal">
+									<input type="hidden" name="id" id="editId">
+									<input type="hidden" name="_method" value="patch">
+									<div class="form-group">
+										<label for="name" class="col-sm-2 control-label">用户名称:</label>
+										<div class="col-sm-9">
+											<input class="form-control" name="username" id="name" required="required">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="name" class="col-sm-2 control-label">用户密码:</label>
+										<div class="col-sm-9">
+											<input class="form-control" name="password" id="password" required="required" type="password">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="confirmPassword" class="col-sm-2 control-label">确认密码:</label>
+										<div class="col-sm-9">
+											<input class="form-control" name="confirmPassword" id="confirmPassword" type="password">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="ip" class="col-sm-2 control-label">用户角色:</label>
+										<div class="col-sm-9">
+											<select id="rolesId"  class="chosen-select form-control" required="required">
+												<!--<option  value=0>超级管理员</option>-->
+												<option value=1>管理员</option>
+												<option value=2>普通用户</option>
+											</select>
+										</div>
+									</div>
+									<div class="modal-footer">
+										<button type="submit" class="btn btn-primary" id="model_submit">提交</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<li class="light-blue dropdown-modal">
+					<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+						<img class="nav-user-photo" src="/assets/avatars/ava.png" alt="photo" />
+						<span class="user-info">
+							<small>欢迎,</small>
+							<span sec:authentication="principal.username" id="authName">username</span>
+						</span>
+
+						<i class="ace-icon fa fa-caret-down"></i>
+					</a>
+
+					<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
+						<li>
+							<a href="#" class="setup">
+								<i class="ace-icon fa fa-cog"></i>
+								设置
+							</a>
+						</li>
+
+						<li class="divider"></li>
+
+						<li>
+							<a href="/logout">
+								<i class="ace-icon fa fa-power-off"></i>
+								登出
+							</a>
+						</li>
+					</ul>
+				</li>
+
+				<!-- /section:basics/navbar.user_menu -->
+			</ul>
+		</div>
+<script>
+    $('li[data-nav] a').click(function(){
+        refresh_nav($(this).attr('href'));
+    })
+	$(document).ready(function () {
+		$(".setup").on('click',function () {
+			$.get('/user/userInfo?username='+$("#authName").text(),function (data) {
+				$('.user-body :input[name="_method"]').val('patch');
+				$('.user-body :input[name="id"]').val(data.id);
+				$('.user-body :input[name="username"]').val(data.username);
+				$('.user-body :input[name="password"]').val("******");
+				$('.user-body :input[name="confirmPassword"]').val("******");
+				$('#modal2').modal('show');
+			})
+		})
+	})
+
+    $("#user-form").on("submit", function(ev) {
+        if($('.user-body :input[name="password"]').val() !== $('.user-body :input[name="confirmPassword"]').val()){
+            $.alert({
+                title: '提示',
+                content: '密码与确认密码不相同',
+            });
+            ev.preventDefault();
+            return;
+        };
+        data =  $('#user-form').serializeArray();
+        var roleIds = [];
+        if($(".user-body #rolesId").val() == 1){
+            roleIds.push(1);
+            roleIds.push(2);
+        }
+        else{
+            roleIds.push(2);
+        }
+        data.push({name:"roles",value:roleIds});
+        $.ajax({
+            url:'/user',
+            data: data,
+            type: 'POST',
+            dataType:"text",
+            success: function(result) {
+//                $('#table').bootstrapTable('refresh');
+                if(result == "success"){
+                    $('#modal2').modal('hide');
+                    $.alert({
+                        title: '提示',
+                        content: '操作成功',
+                    });
+                }
+                else {
+                    $.alert({
+                        title: '提示',
+                        content:result,
+                    });
+                }
+            },
+            error:function(errorcode,msg){
+                if(errorcode.status == 403 )
+                    $.alert({
+                        title: '提示',
+                        content: '您无权操作此项',
+                    });
+            }
+        });
+        ev.preventDefault();
+    });
+</script>
+		<!-- /section:basics/navbar.dropdown -->
+	</div><!-- /.navbar-container -->
+</div>
+<!-- </html> -->

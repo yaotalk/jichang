@@ -1,0 +1,188 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+<div layout:fragment="sidebar" th:replace="layout/sidebar">
+</div>
+<div layout:fragment="content" th:fragment="content">
+	<div class="page-header">
+		<h1>操作日志</h1>
+	</div>
+	<div class="table-header">
+		操作日志
+	</div>
+	<div id="toolbar">
+		<div class="dt-buttons btn-overlap btn-group">
+			<div style="float:left;width:220px;"><span>操作模块:</span>
+				<select name="modelName"  style="width:150px;height:33px" id="select_model">
+					 <option value="">请选择</option>
+					<option value="登录">登录</option>
+					<option value="系统用户">系统用户</option>
+					<option value="客户端用户">客户端用户</option>
+					 <option value="分析仪">分析仪</option>
+					 <option value="摄像机">摄像机</option>
+					 <option value="区域">区域</option>
+					 <option value="摄像机">摄像机</option>
+					 <option value="门禁">门禁</option>
+					 <option value="人脸操作">人脸</option>
+					 <option value="人脸库操作">人脸库</option>
+					 <option value="布控策略">布控策略</option>
+					 <option value="时间方案">时间方案</option>
+				</select>
+			</div>
+			<label for="startTime" class="col-sm-2 control-label" style="width:90px!important">开始时间:</label>
+			<div id="form_startTime" class="input-group date form_datetime col-md-4"  data-date-format="yyyy-mm-dd hh:ii:ss" data-link-field="startTime" style="width:200px!important;float:left">
+				<input class="form-control" size="16" type="text" value="" readonly id="ori_startTime">
+				<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+			</div>
+		   <input type="hidden" id="startTime" value="" />
+			<label for="endTime" class="col-sm-2 control-label" style="width:90px!important">结束时间:</label>
+			<div  id="form_endTime" class="input-group date form_datetime col-md-4" data-date-format="yyyy-mm-dd hh:ii:ss" data-link-field="endTime" style="width:200px!important;float:left">
+				<input class="form-control" size="16" type="text" value="" readonly id="ori_endTime">
+				<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+			</div>
+			<input type="hidden" id="endTime" value="" />
+			<input id="query" type="button" class="btn btn-white" style="margin-left:15px;height:34px;margin-right:15px" value="查询"/>
+			<!--<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">-->
+					<!--<span> <i class="fa fa-refresh bigger-110 blue"></i>-->
+				<!--<span class="hidden">重新加载</span></span>-->
+			<!--</a>-->
+		</div>
+	</div>
+	<div>
+		<table id="table"
+			   data-toolbar="#toolbar"
+			   data-maintain-selected="true"
+			   data-url="/syslog"
+			   data-side-pagination="server"
+			   data-page-list="[5, 10, 20, 50, 100]"
+			   data-pagination="true"
+			   data-click-to-select="true"
+			   data-show-columns="true"
+			   data-detail-view="true"
+			   data-detail-formatter="detailFormatter">
+			<thead>
+			<tr>
+				<th data-checkbox="true"></th>
+				<th data-field="id">ID</th>
+				<th data-field="user.username" >用户名称</th>
+				<th data-field="user.roles" data-formatter="roleFormatter">用户角色</th>
+				<th data-field="modelName">操作模块</th>
+				<th data-field="opration">操作方式</th>
+				<th data-field="ip">ip地址</th>
+				<th data-field="createTime">操作时间</th>
+				<!--<th data-field="oprateDetails">详情</th>-->
+			</tr>
+			</thead>
+		</table>
+	</div>
+	<script type="text/javascript">
+			$(function(){
+				$('#table').bootstrapTable({
+					 queryParams: function(params){
+					 	 params.modelName = $("#select_model").val();
+						 params.startTime = $("#startTime").val() ==""?getNowFormatDate().currentfromdate:$("#startTime").val();
+						 params.endTime = $("#endTime").val()==""?getNowFormatDate().currentdate:$("#endTime").val();
+						 return params;
+					 },
+					 responseHandler : function(result){
+					 	return result;
+					 }
+				 });
+				
+				   $('#table').on('click-row.bs.table', function (e, row, $element) {
+						$('.success').removeClass('success');
+							$($element).addClass('success');
+   				   });
+			      	 $(".fa-refresh").parents("a").on('click',function(){
+						    $('#table').bootstrapTable('refresh');
+				    })
+  					 $("select[name=modelName]").on("change",function(){
+    		    	        $('#table').bootstrapTable('refresh');
+				     })
+				    $('#form_startTime').datetimepicker({
+						language:  'zh-CN',
+						weekStart: 1,
+						todayBtn:  1,
+						autoclose: 1,
+						todayHighlight: 1,
+						startView: 2,
+						forceParse: 0,
+						showMeridian: 1,
+						endDate:new Date()
+				 	});
+
+				   $('#form_endTime').datetimepicker({
+						language:  'zh-CN',
+						weekStart: 1,
+						todayBtn:  1,
+						autoclose: 1,
+						todayHighlight: 1,
+						startView: 2,
+						forceParse: 0,
+						showMeridian: 1,
+						endDate:new Date()
+				 	});
+		     $("#query").on('click',function(){
+		        var startTime = $("#startTime").val() ==""?$("#ori_startTime").val():$("#startTime").val();
+			    var endTime = $("#endTime").val()==""?$("#ori_endTime").val():$("#endTime").val();
+		     	if(startTime >  endTime){
+		        	  $.alert({
+						title: '提示',
+						content: '结束时间不能小于开始时间'
+				 	});
+				 	return;
+				 }
+				  $('#table').bootstrapTable('refresh');
+		       })
+
+   			 })//  ready end
+				$("#ori_startTime").val(getNowFormatDate().currentfromdate);
+				$("#ori_endTime").val(getNowFormatDate().currentdate);
+
+		function getNowFormatDate() {
+			var date = new Date();
+			var seperator1 = "-";
+			var seperator2 = ":";
+			var month = date.getMonth() + 1;
+			var strDate = date.getDate();
+			var strMinutes = date.getMinutes();
+			var strSeconds =  date.getSeconds();
+			if (month >= 1 && month <= 9) {
+				month = "0" + month;
+			}
+			if (strDate >= 0 && strDate <= 9) {
+				strDate = "0" + strDate;
+			}
+			if (strMinutes >= 0 && strMinutes <= 9) {
+				strMinutes = "0" + strMinutes;
+			}
+			if (strSeconds >= 0 && strSeconds <= 9) {
+				strSeconds = "0" + strSeconds;
+			}
+			var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+					+ " " + date.getHours() + seperator2 + strMinutes
+					+ seperator2 + strSeconds;
+			var currentfromdate = 	 date.getFullYear() + seperator1 + month + seperator1 + strDate
+					+ " " +"00:00:00";
+			var current = {};
+			current.currentdate = currentdate;
+			current.currentfromdate = currentfromdate;
+			return current;
+		}
+
+		function roleFormatter(data){
+				 if(data == null){
+				    return '未知用户';
+				 }
+				  if(data.length == 2){
+   			     		return '管理员';
+   			     }
+   			     else
+   			     	return '普通用户';
+		}
+
+		function detailFormatter(index,row){
+              return '<p>'+row.oprateDetails+'</p>';
+		}
+		</script>
+
+</div>
+</html>

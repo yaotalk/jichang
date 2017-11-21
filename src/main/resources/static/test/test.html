@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style type="text/css">
+			div.pos {
+				border: 1px solid red;
+				position: absolute;
+			}
+		</style>
+	</head>
+	<body style="margin: 0px">
+		<script type="text/javascript" src="/assets/comps/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="/assets/comps/stomp/sockjs.min.js"></script>
+		<script type="text/javascript" src="/assets/comps/stomp/stomp.min.js"></script>
+		
+		<div style="position: absolute;">
+			<img id="snapshot" src="">
+			<div class="pos" id="pos"></div>
+		</div>
+		
+		<div>
+			<img id="alarm" src="">
+		</div>
+	</body>
+	
+	<script type="text/javascript">
+	
+	 	var socket = new WebSocket('ws://'+window.location.host+'/client');
+	    var stompClient = Stomp.over(socket);
+	    
+	    stompClient.connect({}, function(frame){
+	    	
+	    	stompClient.subscribe('/c/snapshot', function(message){
+	    		console.log("snapshot:");
+	    		var snapshot = JSON.parse(message.body);
+	    		console.log(snapshot);
+	    		
+	    		$("#snapshot").attr("src", "/snapshot/"+snapshot.photoFileName+"?"+Math.random())
+	    		var left = $("#pos").get(0).offsetLeft;
+	    		var top = $('#snapshot').css("top");
+	    		
+	    		console.log(left+";"+top);
+	    		$("#pos").css("left", snapshot.facePosition.left);
+	    		$("#pos").css("top", snapshot.facePosition.top);
+	    		$("#pos").css("width", snapshot.facePosition.width);
+	    		$("#pos").css("height", snapshot.facePosition.height);
+	    	});
+	    	
+	    	stompClient.subscribe('/c/alarm', function(message){
+	    		console.log("alarm:");
+	    		var alarm = JSON.parse(message.body);
+	    		console.log(alarm);
+	    		$("#alarm").attr("src", "/snapshot/"+alarm.snapshot.photoFileName+"?"+Math.random())
+	    	});
+	    	
+	    	stompClient.subscribe('/c/multiFace', function(message){
+	    		console.log("multiFace:");
+	    		var alarm = JSON.parse(message.body);
+	    		console.log(alarm);
+	    		//$("#alarm").attr("src", "snapshot/"+alarm.snapshot.photoFileName+"?"+Math.random())
+	    	});
+	    });
+	</script>
+</html>

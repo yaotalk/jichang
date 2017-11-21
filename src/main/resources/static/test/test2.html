@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<script type="text/javascript" src="/jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="/stomp/sockjs.min.js"></script>
+		<script type="text/javascript" src="/stomp/stomp.min.js"></script>
+		
+		<div>
+			<img id="snapshot" src="">
+		</div>
+		
+		<div>
+			<img id="alarm" src="">
+		</div>
+	</body>
+	
+	<script type="text/javascript">
+	
+	 	var socket = new WebSocket('ws://192.168.123.47:8080/client');
+	 	
+	 	var Byte = {
+		    LF: '\x0A',
+		    NULL: '\x00'
+		  };
+	 	socket.onopen = function(event) { 
+
+ 		  // 发送一个初始化消息
+ 		  var connect_cmd = "CONNECT";
+ 		  var connect_header = ["accept-version:1.1,1.0", "heart-beat:10000,10000"];
+ 		  var cmd_msg = connect_cmd + Byte.LF+ connect_header.join(Byte.LF) + Byte.LF+ Byte.LF+Byte.NULL;
+ 		  console.log(cmd_msg);
+ 		  socket.send(cmd_msg); 
+ 		  
+		  
+ 		  // 监听消息
+ 		  socket.onmessage = function(event) { 
+ 		    console.log('Client received a message',event);
+ 		    var data = event.data.split(Byte.LF);
+ 		    if(data[0] == "CONNECTED"){
+		  	  var sub_cmd = "SUBSCRIBE";
+			  var sub_header1 = ["id:sub-0", "destination:/c/snapshot"];
+			  var sub_msg1 = sub_cmd + Byte.LF+ sub_header1.join(Byte.LF) + Byte.LF+ Byte.LF+Byte.NULL;
+			  console.log(sub_msg1);
+			  socket.send(sub_msg1);
+			  
+			  var sub_header2 = ["id:sub-1", "destination:/c/alarm"];
+			  var sub_msg2 = sub_cmd + Byte.LF+ sub_header2.join(Byte.LF) + Byte.LF+ Byte.LF+Byte.NULL;
+			  console.log(sub_msg2);
+			  socket.send(sub_msg2);
+ 		    }
+ 		  }; 
+
+ 		  // 监听Socket的关闭
+ 		  socket.onclose = function(event) { 
+ 		    console.log('Client notified socket has closed',event); 
+ 		  }; 
+
+ 		  // 关闭Socket.... 
+ 		  //socket.close() 
+ 		};
+	</script>
+</html>

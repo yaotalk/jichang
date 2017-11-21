@@ -1,0 +1,308 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>人脸列表</h1>
+			</div>
+			<div class="table-header">
+				人脸列表
+			</div>
+			<div id="toolbar">
+				<div class="dt-buttons btn-overlap btn-group">
+					<div style="float:left;width:220px;"><span>人脸库：</span>
+						 <select name="facesetToken" th:remove="none" style="width:150px;height:33px" id="facesetToken">
+							 <option th:each="faceSet:${faceSets}"
+									 th:value="${faceSet.token}" th:text="${faceSet.name}">Credit card</option>
+						 </select>
+					</div>
+					<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+						<span><i class="fa fa-edit bigger-110 green"></i>
+                    <span class="hidden">编辑人脸</span></span>
+					</a>
+					<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+						<span> <i class="fa fa-trash bigger-110 red"></i>
+                    <span class="hidden">删除人脸</span></span>
+					</a>
+					<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+						<span> <i class="fa fa-refresh bigger-110 blue"></i>
+                    <span class="hidden">重新加载</span></span>
+					</a>
+				</div>
+			</div>
+			<div class="modal fade" id="edit_modal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+				<div class="modal-dialog" role="document"  >
+					<div class="modal-content" style="width: 150%;margin-left: -20%;">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="editModalLabel">修改</h4>
+						</div>
+						<div class="modal-body">
+							<form id="edit_form" class="form-horizontal">
+								<input type="hidden" name="id" id="editId"/>
+								<input type="hidden" name="picSize" id="picSize"/>
+								<input type="hidden" name="picMd5" id="picMd5"/>
+								<input type="hidden" name="imgpath" id="imgpath"/>
+								<input type="hidden" name="imgUrl" id="imgUrl"/>
+								<input type="hidden" name="_method" value="patch"/>
+								<div style="float:left;width: 40%;margin-top: 30px;margin-left: 80px;">
+									<div class="form-group">
+										<div class="col-sm-9" >
+											<img src="#" id="peopleImg" style="max-width: 250px; max-height: 300px">
+										</div>
+									</div>
+								</div>
+								<div style="width: 50%;margin-top: 30px;float: right;">
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">姓名:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="name" id="name">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">性别:</label>
+										<div class="col-sm-9">
+											<select name="sex" class="chosen-select form-control">
+												<option value="0">男</option>
+												<option value="1">女</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">身份证号:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="idCard" id="idCard" >
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">工号:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="employeeId" id="employeeId" required="required">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">电话:</label>
+										<div class="col-sm-9">
+											<input type="text" class="form-control" name="phoneNumber" id="phoneNumber">
+										</div>
+									</div>
+									<div class="form-group">
+										<label for="recipient-name" class="col-sm-2 control-label">人脸库:</label>
+										<div class="col-sm-9">
+											<select class="chosen-select form-control" th:remove="none" name="facesetToken" disabled="true" required="required">
+													<option th:each="faceSet:${faceSets}"
+															th:value="${faceSet.token}" th:text="${faceSet.name}">/option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group" style="float: right;padding-right: 12%;">
+										<button type="submit" class="btn btn-primary" id="edit_submit">提交</button>
+									</div>
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<table id="table"
+					   data-toolbar="#toolbar"
+					   data-maintain-selected="true"
+					   data-url="/faceset/face"
+					   data-side-pagination="server"
+					   data-page-list="[10, 20, 50, 100,All]"
+					   data-pagination="true"
+					   data-search="true"
+					   data-click-to-select="true"
+					   data-show-columns="true"
+					   data-show-export="true" >
+					<thead>
+					<tr>
+						<th data-checkbox="true"></th>
+						<th data-field="id" >人脸ID</th>
+						<th data-field="name">姓名</th>
+						<th data-field="employeeId">工号</th>
+						<th data-field="sex" data-formatter="actionFormatter" >性别</th>
+						<th data-field="idCard">身份证号</th>
+						<th data-field="phoneNumber">电话</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
+			<script>
+			 $(function(){
+
+				 $('#table').bootstrapTable({
+                     // to be fixed
+					 queryParams: function(params){
+					    if(params.limit <= 10){
+					         params.limit = 10;
+						}
+						 params.facesetToken = $("#facesetToken").val();
+						 return params;
+					 },
+					 onDblClickRow:function(row){
+					 	  modelShow("dbclick",row);
+					 }
+				 });
+
+				  $('#table').on('click-row.bs.table', function (e, row, $element) {
+						$('.success').removeClass('success');
+							$($element).addClass('success');
+   				   });
+
+    		      $("select[name=facesetToken]").on("change",function(){
+    		    	  $('#table').bootstrapTable('refresh');
+				  })
+
+    			  $(".fa-edit").parents("a").on('click',function(){
+    			 		var ids = getIdSelections();
+    			 		if(ids.length ==0|| ids.length >1){
+							 $.alert({
+								title: '提示',
+								content: '请选择一行',
+							  });
+							 return;
+						}
+						modelShow("button");
+    			 })
+    			 function modelShow(mode,row){
+    			      if(mode == "button"){
+						var face =  $('#table').bootstrapTable('getSelections')[0];
+    			       }
+    			      else if(mode == 'dbclick')
+    			       {
+    			           var face =  row;
+    			       }
+					 $("#edit_form select[name=facesetToken]").children().each(function(index,data){
+								   if($(data).val() == face.faceSet.token){
+											$(data).attr("selected","selected");
+								   }
+					 })
+					$('#edit_modal #editId').val(face.id);
+					$('#edit_modal #picSize').val(face.picSize);
+					$('#edit_modal #picMd5').val(face.picMd5);
+					$('#edit_modal #imgpath').val(face.imgpath);
+					$('#edit_modal #name').val(face.name);
+					$('#edit_modal #employeeId').val(face.employeeId);
+					$('#edit_modal #idCard').val(face.idCard);
+					$('#edit_modal #phoneNumber').val(face.phoneNumber);
+					$('#edit_modal #imgUrl').val(face.imgUrl);
+					//$("#peopleImg").attr("src","/people/"+face.imgpath);
+					$("#peopleImg").attr("src",face.imgUrl);
+					$('#edit_modal').modal('show');
+    			 }
+    			 $(".fa-refresh").parents("a").on('click',function(){
+					 $('#table').bootstrapTable('refresh');
+				 })
+    			   $("#edit_form").on("submit", function(ev) {
+					   var data = $('#edit_form').serializeArray();
+					   $.ajax({
+	               			url: '/face',
+	               			data: data,
+	               		    type: 'POST',
+	               		    dataType:"text",
+	               		    success: function(result) {
+	               		    	if(result == "success"){
+	               		    		$('#edit_modal').modal('hide');
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: '修改成功',
+	            		    		});
+									 $('#table').bootstrapTable('refresh');
+	               		    	}else{
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: result
+	            		    		});
+	               		    	}
+	               		    }
+               		  });
+				      ev.preventDefault();
+                  });
+					// 	ready end
+					 <!--$('#toolbar').find('select').change(function () {-->
+						<!--$('#table').bootstrapTable('destroy').bootstrapTable({-->
+							<!--exportDataType: $(this).val()-->
+						<!--});-->
+       				 <!--});-->
+				})
+				function actionFormatter(value, row, index) {
+      				 if(value == '1')
+						return '男'
+					else if(value == '0'){
+						return '女'
+						}
+				    else return '未知';
+    			}
+    			/* function load(){
+						 var $_obj = $("<img>")[0];
+						 var $_img = $("#peopleImg");
+						 $_obj.src = $_img[0].src;
+						 var origin_w = $_obj.width;
+						 var origin_h = $_obj.height;
+						$_img.height(250);
+						var width = origin_w/origin_h*250;
+						if(width > 250){
+							$_img.width(250);
+							$_img.height(250*250/width);
+						}
+						else{
+							$_img.width(origin_w/origin_h*250);
+						}
+						$('#edit_modal').modal('show')
+				} */
+			  	 $(".fa-trash").parents("a").on('click',function(){
+    			 		var ids = getIdSelections();
+    			 		if(ids.length ==0){
+								 $.alert({
+									title: '提示',
+									content: '请选择一行',
+								  });
+						 	return;
+						 }
+                     $.confirm({
+                         title: '警告',
+                         content: '确认删除？',
+                         buttons: {
+                             '确认': function(){
+                                 $.ajax({
+                                     url: '/face',
+                                     type: 'post',
+                                     dataType:"text",
+                                     data:{
+                                         faceTokens: ids.join(","),
+                                         facesetToken : $("#facesetToken").val(),
+                                         _method: 'DELETE'
+                                     },
+                                     success: function(result) {
+                                         if(result == "success"){
+                                             $.alert({
+                                                 title: '提示',
+                                                 content: '删除成功',
+                                             });
+                                             $('#table').bootstrapTable('refresh');
+                                         }
+                                         else $.alert(result)
+                                     }
+                                 });
+                             },
+                             '取消': function(){
+                                 return;
+                             }
+                         }
+                     });
+			       })
+
+				  function getIdSelections() {
+							return $.map($('#table').bootstrapTable('getSelections'), function (row) {
+								return row.id
+							});
+    			  }
+			</script>
+		</div>
+	</html>	

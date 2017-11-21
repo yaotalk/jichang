@@ -1,0 +1,217 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+<div layout:fragment="sidebar" th:replace="layout/sidebar">
+</div>
+<div layout:fragment="content" th:fragment="content">
+    <div class="page-header">
+        <h1>区域</h1>
+    </div>
+    <div class="table-header">
+        区域
+    </div>
+    <div id="toolbar">
+        <div class="dt-buttons btn-overlap btn-group">
+            <a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-plus bigger-110 green"></i>
+						<span class="hidden">新增区域</span></span>
+            </a>
+            <a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-edit bigger-110 green"></i>
+				<span class="hidden">编辑区域</span></span>
+            </a>
+            <a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-trash bigger-110 red"></i>
+				<span class="hidden">删除区域</span></span>
+            </a>
+            <a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-refresh bigger-110 blue"></i>
+				<span class="hidden">重新加载</span></span>
+            </a>
+        </div>
+    </div>
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="editModalLabel">区域修改</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="modal_form" class="form-horizontal">
+                        <input type="hidden" name="id" id="editId">
+                        <input type="hidden" name="_method" value="patch">
+                        <div class="form-group">
+                            <label for="name" class="col-sm-2 control-label">区域名称:</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" name="name" id="name" required="required">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent" class="col-sm-2 control-label">父域名称:</label>
+                            <div class="col-sm-9">
+                                <select name="parentNode.id"  class="chosen-select form-control" id="parent">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="background-color:white">
+                            <button type="submit" class="btn btn-primary" id="model_submit">提交</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <table id="table"
+               data-toolbar="#toolbar"
+               data-maintain-selected="true"
+               data-url="/region"
+               data-pagination="true"
+               data-search="true"
+               data-click-to-select="true"
+               data-show-columns="true">
+            <thead>
+            <tr>
+                <th data-checkbox="true"></th>
+                <th data-field="id" >区域ID</th>
+                <th data-field="name">区域名称</th>
+                <th data-field="parentNode.name">父类名称</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+			$(function(){
+				$('#table').bootstrapTable({
+				      onDblClickRow:function(row){
+					 	  modelShow("dbclick",row);
+				 	  }
+				   });
+				   $('#table').on('click-row.bs.table', function (e, row, $element) {
+						$('.success').removeClass('success');
+							$($element).addClass('success');
+   				   });
+					 $(".fa-plus").parents("a").on('click',function(){
+					     $('#modal :input').val('');
+					      $('#modal :input[name="_method"]').val('');
+					      $('#modal select[name="parentNode.id"]').children().remove();
+                           var last = "<option value=''>请选择</option>";
+                           $(last).appendTo($('#modal select[name="parentNode.id"]'));
+                           $.getJSON("/region",function(data,status){
+                               for(var index in  data){
+                                    var optionvalue = data[index].id;
+                                    var optionselect = "<option value = "+ optionvalue +">"+data[index].name+"</option>";
+                                    $(optionselect).appendTo($('#modal select[name="parentNode.id"]'));
+                                }
+                            })
+						 $('#modal').modal('show');
+					 })
+					 $(".fa-edit").parents("a").on('click',function(){
+					    var ids = getIdSelections();
+    			 		if(ids.length ==0|| ids.length >1){
+							 $.alert({
+								title: '提示',
+								content: '请选择一行',
+							  });
+							 return;
+						}
+                        modelShow("button");
+					 })
+                    function modelShow(mode,row){
+                        if(mode == "button"){
+                           var region =  $('#table').bootstrapTable('getSelections')[0];
+                        }
+                       else if(mode == 'dbclick')
+    			       {
+    			           var region =  row;
+    			       }
+    			        $('#modal :input[name="_method"]').val('patch');
+                        $('#modal :input[name="id"]').val(region.id);
+                        $('#modal :input[name="name"]').val(region.name);
+                        $('#modal select[name="parentNode.id"]').children().remove();
+                        var last = "<option value=''>请选择</option>";
+                        $(last).appendTo($('#modal select[name="parentNode.id"]'));
+                        $.getJSON("/region?regionid="+region.id,function(data,status){
+                           for(var index in  data){
+                                var optionvalue = data[index].id;
+                                var optionselect = "<option value = "+ optionvalue +">"+data[index].name+"</option>";
+                                $(optionselect).appendTo($('#modal select[name="parentNode.id"]'));
+                                if(region.parentNode !=null &&  region.parentNode.id == optionvalue){
+                                     $('#modal select').val(optionvalue);
+                                }
+                            }
+                         })
+                        $('#modal').modal('show');
+    			     }
+ 					$(".fa-trash").parents("a").on('click',function(){
+    			 		var ids = getIdSelections();
+    			 		if(ids.length ==0 || ids.length>1){
+								 $.alert({
+									title: '提示',
+									content: '请选择一行',
+								  });
+						 	return;
+						 }
+				    $.ajax({
+							url: '/region',
+							type: 'post',
+							dataType:"text",
+							data:{
+								 id: ids[0],
+							     _method: 'DELETE'
+							},
+							success: function(result) {
+								$('#modal').modal('hide');
+								if(result == "success"){
+									$.alert({
+										title: '提示',
+										content: '删除成功',
+									});
+									 $('#table').bootstrapTable('refresh');
+								}
+								else $.alert(result);
+							}
+						});
+			      	 })
+			        $(".fa-refresh").parents("a").on('click',function(){
+							 $('#table').bootstrapTable('refresh');
+				    })
+			     $("#modal_form").on("submit", function(ev) {
+                         var data =  $('#modal_form').serializeArray();
+                           $.ajax({
+                                url:'/region',
+                                data: data,
+                                type: 'POST',
+                                dataType:"text",
+                                success: function(result) {
+                                 $('#table').bootstrapTable('refresh');
+                                    if(result == "success"){
+                                        $('#modal').modal('hide');
+                                        $.alert({
+                                            title: '提示',
+                                            content: '操作成功',
+                                        });
+                                    }
+                                    else if(result =="failed"){
+                                        $.alert({
+                                            title: '提示',
+                                            content: '操作失败',
+                                        });
+                                    }
+                                }
+                            });
+                     ev.preventDefault();
+                  });
+
+
+				  function getIdSelections() {
+							return $.map($('#table').bootstrapTable('getSelections'), function (row) {
+								return row.id;
+							});
+    			  }
+   				   })//  ready end
+		</script>
+
+</div>
+</html>

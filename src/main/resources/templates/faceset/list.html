@@ -1,0 +1,220 @@
+	<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+		<div layout:fragment="sidebar" th:replace="layout/sidebar">
+		</div>
+		<div layout:fragment="content" th:fragment="content">
+			<!-- <div th:replace="fragments :: navbar"></div> -->
+			<!-- <h1 layout:fragment="page-header">Messages : View all</h1> -->
+			<div class="page-header">
+				<h1>人脸库列表</h1>
+			</div>
+			<div class="table-header">
+				人脸库列表
+			</div>
+		<div id="toolbar">
+			<div class="dt-buttons btn-overlap btn-group">
+				<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-plus bigger-110 green"></i>
+						<span class="hidden">新增人脸库</span></span>
+				</a>
+				<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-edit bigger-110 green"></i>
+				<span class="hidden">编辑人脸库</span></span>
+				</a>
+				<a class="dt-button btn btn-white btn-primary btn-bold"  tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-trash bigger-110 red"></i>
+				<span class="hidden">删除人脸库</span></span>
+				</a>
+				<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-refresh bigger-110 blue"></i>
+				<span class="hidden">重新加载</span></span>
+				</a>
+			</div>
+		</div>
+		<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title" id="addModalLabel">人脸库操作</h4>
+		      </div>
+		      <div class="modal-body">
+		        <form id="modal_form" class="form-horizontal">
+					<input type="hidden" class="form-control" name="token">
+					<input type="hidden" name="_method" value="patch">
+		          <div class="form-group">
+		            <label for="recipient-name" class="col-sm-2 control-label">名字:</label>
+		            <div class="col-sm-9">
+		            	<input type="text" class="form-control" name="name" required="required">
+		            </div>
+		          </div>
+					<div class="form-group">
+						<label for="recipient-capacity" class="col-sm-2 control-label">容量:</label>
+						<div class="col-sm-9">
+							<input type="text" class="form-control" value=1000 name="capacity" required="required">
+						</div>
+					</div>
+					<div class="modal-footer" style="background-color:white">
+						<button type="submit" class="btn btn-primary ladda-button" data-style="slide-up" id="model_submit">提交</button>
+					</div>
+		        </form>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+			<div>
+				<table id="table"
+					   data-toolbar="#toolbar"
+					   data-maintain-selected="true"
+					   data-url="/faceset"
+					   data-pagination="true"
+					   data-search="true"
+					   data-click-to-select="true"
+					   data-show-columns="true">
+					<thead>
+					<tr>
+						<th data-checkbox="true"></th>
+						<th data-field="token" >ID</th>
+						<th data-field="name">名称</th>
+						<th data-field="faceCount">人脸数</th>
+						<th data-field="createTime">创建时间</th>
+					</tr>
+					</thead>
+				</table>
+			</div>
+		<script type="text/javascript">
+		$(function(){
+				$('#table').bootstrapTable({
+				onDblClickRow:function(row){
+					 	  modelShow("dbclick",row);
+					 }
+				});
+			
+				   $('#table').on('click-row.bs.table', function (e, row, $element) {
+						$('.success').removeClass('success');
+							$($element).addClass('success');
+   				   });
+					 $(".fa-plus").parents("a").on('click',function(){
+					     $('#modal :input').val('');
+					     $('#modal :input[name="capacity"]').val(1000);
+						 $('#modal').modal('show');
+					 })
+					 $(".fa-edit").parents("a").on('click',function(){
+							var ids = getIdSelections();
+							if(ids.length ==0|| ids.length >1){
+								 $.alert({
+									title: '提示',
+									content: '请选择一行',
+								  });
+								 return;
+					 }
+						modelShow("button");
+					 })
+                    function modelShow(mode,row){
+					    if(mode == "button"){
+						   var faset =  $('#table').bootstrapTable('getSelections')[0];
+					    }
+					   else if(mode == 'dbclick')
+					    {
+						   var faset =  row;
+					    }
+						$('#modal :input[name="_method"]').val('patch');
+						$('#modal :input[name="token"]').val(faset.token);
+					    $('#modal :input[name="name"]').val(faset.name);
+					    $('#modal :input[name="capacity"]').val(faset.capacity);
+						$('#modal').modal('show');
+                    }
+ 					$(".fa-trash").parents("a").on('click',function(){
+    			 		var ids = getIdSelections();
+    			 		if(ids.length ==0 || ids.length>1){
+								 $.alert({
+									title: '提示',
+									content: '请选择一行',
+								  });
+						 	return;
+						 }
+                        $.confirm({
+                            title: '警告',
+                            content: '确认删除？',
+                            buttons: {
+                                '确认': function(){
+                                    $.ajax({
+                                        url: '/faceset',
+                                        type: 'post',
+                                        dataType:"text",
+                                        data:{
+                                            token: ids[0],
+                                            _method: 'DELETE'
+                                        },
+                                        success: function(result) {
+                                            $('#modal').modal('hide');
+                                            if(result == "success"){
+                                                $.alert({
+                                                    title: '提示',
+                                                    content: '删除成功',
+                                                });
+                                                $('#table').bootstrapTable('refresh');
+                                            }
+                                            else $.alert(result);
+                                        }
+                                    });
+                                },
+                                '取消': function(){
+                                    return;
+                                }
+                            }
+                        });
+			      	 })
+					 $(".fa-refresh").parents("a").on('click',function(){
+							 $('#table').bootstrapTable('refresh');
+					 })
+			    $("#modal_form").on("submit", function(ev) {
+					   Ladda.bind('button[type=submit]');
+					   var l = Ladda.create($("#modal_form button[type='submit']")[0]);
+					    l.start();
+					   var data = $('#modal_form').serializeArray();
+					   $.ajax({
+	               			url:'/faceset',
+	               			data: data,
+	               		    type:'POST',
+	               		    dataType:"text",
+	               		    success: function(result) {
+								 $('#table').bootstrapTable('refresh', {
+											url: '/faceset'
+								 });
+	               		    	if(result == "success"){
+	               		    		$('#modal').modal('hide');
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: '操作成功',
+	            		    		});
+	               		    	}
+	               		    	else {
+	               		    	    if(result.indexOf(500) >0 ){
+	               		    	        result = '系统错误';
+									}
+									else if(result.indexOf("capacity") > 0 ){
+	               		    	        result = '容量不能小于已有容量';
+									}
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: result
+	            		    		});
+	               		    	}
+	               		    	l.stop();
+	               		    }
+               		  	});
+               		  	 ev.preventDefault();
+			    })
+
+
+				  function getIdSelections() {
+							return $.map($('#table').bootstrapTable('getSelections'), function (row) {
+								return row.token
+							});
+    			  }
+   				   })//  ready end
+
+		</script>
+
+		</div>
+	</html>

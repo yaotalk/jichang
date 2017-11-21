@@ -1,0 +1,419 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+<div layout:fragment="sidebar" th:replace="layout/sidebar">
+</div>
+<div layout:fragment="content" th:fragment="content">
+	<div class="page-header">
+		<h1>布控策略</h1>
+	</div>
+	<div class="table-header">
+		布控策略
+	</div>
+	<div id="toolbar">
+		<div class="dt-buttons btn-overlap btn-group">
+			<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-plus bigger-110 green"></i>
+						<span class="hidden">新增布控策略</span></span>
+			</a>
+			<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span><i class="fa fa-edit bigger-110 green"></i>
+				<span class="hidden">编辑布控策略</span></span>
+			</a>
+			<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-trash bigger-110 red"></i>
+				<span class="hidden">删除布控策略</span></span>
+			</a>
+			<a class="dt-button btn btn-white btn-primary btn-bold" tabindex="0" aria-controls="dynamic-table" href="#" data-original-title="" title="">
+					<span> <i class="fa fa-refresh bigger-110 blue"></i>
+				<span class="hidden">重新加载</span></span>
+			</a>
+		</div>
+	</div>
+	<div>
+		<table id="table"
+			   data-toolbar="#toolbar"
+			   data-maintain-selected="true"
+			   data-url="/strategy"
+			   data-pagination="true"
+			   data-search="true"
+			   data-click-to-select="true"
+			   data-show-columns="true"
+			   data-detail-view="true"
+			   data-detail-formatter="detailFormatter">
+			<thead>
+			<tr>
+				<th data-checkbox="true"></th>
+				<th data-field="id" >策略ID</th>
+				<th data-field="name">策略名称</th>
+				<th data-field="type" data-formatter="blacklistFormatter">布控类型</th>
+				<th data-field="snapshot" data-formatter="snapFormatter">是否抓拍</th>
+				<th data-field="scheme_name">
+					时间方案
+				</th>
+				<th data-field="compareThreshold" >阈值</th>
+			</tr>
+			</thead>
+		</table>
+	</div>
+	<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content" style="width:140%;margin-left:-35%">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="editModalLabel">布控策略操作</h4>
+				</div>
+				<div class="modal-body">
+					<form id="modal_form" class="form-horizontal">
+						<input type="hidden" name="id" id="editId">
+						<input type="hidden" name="_method" value="patch">
+						<div class="form-group">
+								<label for="name" class="col-sm-2 control-label">策略名称:</label>
+								<div class="col-sm-4">
+									<input class="form-control" name="name" id = "name" required="required">
+								</div>
+							<label for="ip" class="col-sm-2 control-label" style="text-align:left;width:100px">布控类型:</label>
+							<div class="col-sm-4" style="padding-left:0px" >
+								<select name="type" class="chosen-select form-control" required="required">
+									<option value='BlackList'>黑名单</option>
+									<option value='WhiteList'>白名单</option>
+									<option value='DynaminFaceRepo'>动态底库</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="ip" class="col-sm-2 control-label">是否抓拍:</label>
+							<div class="col-sm-4">
+								<select name="snapshot" class="chosen-select form-control" required="required">
+									<option value=true>抓拍</option>
+									<option value=false>不抓拍</option>
+								</select>
+							</div>
+							<label for="ip" class="col-sm-2 control-label" style="text-align:left;width:100px">时间方案:</label>
+							<div class="col-sm-4" style="padding-left:0px">
+								<select name="scheme" th:remove="none" class="chosen-select form-control" required="required">
+									<option th:value=null th:text="请选择"></option>
+									<option th:each="scheme:${schemes}"
+											th:value="${scheme.id}" th:text="${scheme.name}">/option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="port" class="col-sm-2 control-label">每帧最多抓拍人脸数(1-10):</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" name="maxfaceNum" id="maxfaceNum" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+							<label for="username" class="col-sm-2 control-label" style="text-align:left;width:100px">比对阀值:</label>
+							<div class="col-sm-4" style="padding-left:0px">
+								<input type="text" class="form-control" name="compareThreshold" id="compareThreshold" required="required" pattern="^\d+\.{0,1}\d*$" placeholder="请输入数字">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="password" class="col-sm-2 control-label">最小人脸像素:</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" name="minFaceSize" id="minFaceSize"  required="required" pattern="^[0-9]*$" placeholder="请输入大于64的数字">
+							</div>
+							<label for="password" class="col-sm-2 control-label" style="text-align:left;width:100px">人脸数据保存天数:</label>
+							<div class="col-sm-4" style="padding-left:0px">
+								<input type="text" class="form-control" name="preserveDays" id="preserveDays" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="recipient-name" class="col-sm-2 control-label">抓拍人脸质量阈值(0-100):</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" name="faceQualityThreshold" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+							<label for="recipient-name" class="col-sm-2 control-label"  style="text-align:left;width:100px">抓拍间隔(毫秒):</label>
+							<div class="col-sm-4" style="padding-left:0px">
+								<input type="text" class="form-control" name="snapInterval" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="recipient-name" class="col-sm-2 control-label">陌生人重试次数:</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" name="retryCounts" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+							<label for="recipient-name" class="col-sm-2 control-label"  style="text-align:left;width:100px">识别入库间隔:</label>
+							<div class="col-sm-4" style="padding-left:0px">
+								<input type="text" class="form-control" name="intervals" required="required" pattern="^[0-9]*$" placeholder="请输入数字">
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label for="ip" class="col-sm-2 control-label">禁止多人检测:</label>
+							<div class="col-sm-4">
+								<select name="forbidMultiFace" class="chosen-select form-control" required="required">
+									<option value=false>否</option>
+									<option value=true>是</option>
+								</select>
+							</div>
+							<label id="intervalLabel" class="col-sm-2 control-label"  style="text-align:left;width:100px;display:none">多人检测等待时间:</label>
+							<div id="intervalDiv" class="col-sm-4" style="padding-left:0px;display:none">
+								<input type="text" class="form-control" name="forbidMultiFaceInterval" pattern="^[0-9]*$" value=0 placeholder="请输入数字">
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary" id="modal_submit">提交</button>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+			$(function(){
+				$('#table').bootstrapTable({
+				 onDblClickRow:function(row){
+					 	  modelShow("dbclick",row);
+				 	  }
+				});
+				
+				   $('#table').on('click-row.bs.table', function (e, row, $element) {
+						$('.success').removeClass('success');
+							$($element).addClass('success');
+   				   });
+					 $(".fa-plus").parents("a").on('click',function(){
+					     $('#modal :input').val('');
+						 $('#modal').modal('show');
+					 })
+					 $(".fa-edit").parents("a").on('click',function(){
+					    var ids = getIdSelections();
+    			 		if(ids.length ==0|| ids.length >1){
+							 $.alert({
+								title: '提示',
+								content: '请选择一行',
+							  });
+							 return;
+						}
+ 							modelShow("button");
+					 })
+                 $("#modal select[name = 'forbidMultiFace']").on('change',function () {
+					 	if($(this).val() === 'true'){
+                            $("#intervalLabel").show();
+                            $("#intervalDiv").show();
+						}
+						else {
+                            $("#intervalLabel").hide();
+                            $("#intervalDiv").hide();
+						}
+                 })
+				 function modelShow(mode,row){
+					 if(mode == "button"){
+								 var strategy =  $('#table').bootstrapTable('getSelections');
+							}
+						 else if(mode == 'dbclick')
+						   {
+						      var strategy = [];
+							  strategy.push(row);
+						   }
+					    $('#modal :input[name="_method"]').val('patch');
+						$('#modal :input[name="id"]').val(strategy[0].id);
+						$('#modal :input[name="name"]').val(strategy[0].name);
+						$('#modal :input[name="maxfaceNum"]').val(strategy[0].maxfaceNum);
+						$('#modal :input[name="compareThreshold"]').val(strategy[0].compareThreshold);
+						$('#modal :input[name="minFaceSize"]').val(strategy[0].minFaceSize);
+						$('#modal :input[name="preserveDays"]').val(strategy[0].preserveDays);
+						$('#modal :input[name="faceQualityThreshold"]').val(strategy[0].faceQualityThreshold);
+						$('#modal :input[name="snapInterval"]').val(strategy[0].snapInterval);
+						$('#modal :input[name="retryCounts"]').val(strategy[0].retryCounts);
+						$('#modal :input[name="intervals"]').val(strategy[0].intervals);
+						$('#modal :input[name="forbidMultiFaceInterval"]').val(strategy[0].forbidMultiFaceInterval);
+						$('#modal select[name="scheme"]').children().remove();
+						$("#modal select[name = 'type']").children().each(function(index,data){
+								  if(strategy[0].type == $(data).val()){
+									 $(data).attr("selected",true);
+								  }
+								  if(strategy[0].type == $(data).val()){
+									 $(data).prop("selected",true);
+								  }
+						})
+						$("#modal select[name = 'snapshot']").children().each(function(index,data){
+								  if(true== strategy[0].snapshot && $(data).val() == 'true'){
+									 $(data).attr("selected",true);
+								  }
+								  if(false== strategy[0].snapshot && $(data).val() == 'false'){
+									 $(data).prop("selected",true);
+								  }
+						})
+
+						$("#modal select[name = 'forbidMultiFace']").children().each(function(index,data){
+								  if(true== strategy[0].forbidMultiFace && $(data).val() == 'true'){
+									   $(data).attr("selected",true);
+                                      $("#intervalLabel").show();
+                                      $("#intervalDiv").show();
+								  }
+								  if(false== strategy[0].forbidMultiFace && $(data).val() == 'false'){
+									 $(data).prop("selected",true);
+                                      $("#intervalLabel").hide();
+                                      $("#intervalDiv").hide();
+								  }
+						})
+						var optionvalue = "<option value=''>请选择</option>";
+						$(optionvalue).appendTo($('#edit_modal select[name="scheme"]'));
+						 $.getJSON("/scheme",function (json) {
+							$(json).each(function (index,data) {
+								  optionvalue = "<option value="+data.id+">"+data.name+"</option>";
+								  if(strategy[0].scheme_id == data.id){
+								   optionvalue = "<option value="+data.id+" selected='selected'>"+data.name+"</option>";
+								}
+								$(optionvalue).appendTo($('#modal select[name="scheme"]'));
+
+							})
+						})
+						$('#modal').modal('show');
+					  }
+ 					$(".fa-trash").parents("a").on('click',function(){
+    			 		var ids = getIdSelections();
+    			 		if(ids.length ==0 || ids.length>1){
+								 $.alert({
+									title: '提示',
+									content: '请选择一行',
+								  });
+						 	return;
+					 }
+				       $.get('/strategy/isused?id='+ids[0],function(data){
+											if(data != 'success')
+										  {
+													 $.confirm({
+															 title: '警告',
+															 content: data,
+															 buttons: {
+																  '确认': function(){
+																		 $.ajax({
+																			url: '/strategy',
+																			type: 'post',
+																			dataType:'text',
+																			data:{
+																				 id: ids[0],
+																				_method: 'DELETE'
+																			},
+																			success: function(result) {
+																				if(result == "success"){
+																					$.alert({
+																						title: '提示',
+																						content: '删除成功',
+																					});
+																					  $('#table').bootstrapTable('refresh');
+																				}
+																			}
+																		});
+																},
+																'取消': function(){
+																		return;
+																}
+														}
+													});
+											}
+											else
+											{
+												 $.ajax({
+															url: '/strategy',
+															type: 'post',
+															dataType:"text",
+															data:{
+																 id: ids[0],
+																_method: 'DELETE'
+															},
+															success: function(result) {
+																if(result == "success"){
+																	$.alert({
+																		title: '提示',
+																		content: '删除成功',
+																	});
+																  $('#table').bootstrapTable('refresh');
+																}
+															}
+														});
+											}
+				                	},'text')
+
+			      	  })
+			        $(".fa-refresh").parents("a").on('click',function(){
+							 $('#table').bootstrapTable('refresh');
+				    })
+			        $("#modal_form").on("submit", function(ev) {
+			       	   var url,type = 'POST',_method;
+
+			       	   if($("#modal select[name = 'forbidMultiFace']").val() == 'false'){
+                           $('#modal :input[name="forbidMultiFaceInterval"]').val(0);
+					   }
+					   else  if($('#modal :input[name="forbidMultiFaceInterval"]').val() == ""){
+                           $.alert({
+                               title: '提示',
+                               content: '请输入多人检测等待时间',
+
+                           });
+                           ev.preventDefault();
+                           return;
+                       }
+			       	   if($('#modal :input[name="minFaceSize"]').val() < 64){
+			       	   $.alert({
+								title: '提示',
+								content: '最小人脸像素最小值为64，请重新输入',
+
+	            		 });
+	            		 ev.preventDefault();
+	            		 return;
+	            	  }
+					   var data = $('#modal_form').serializeArray();
+					   $.ajax({
+	               			url:'/strategy',
+	               			data: data,
+	               		    type: 'POST',
+	               		    dataType:"text",
+	               		    success: function(result) {
+	               		     $('#table').bootstrapTable('refresh');
+	               		    	if(result == "success"){
+	               		    		$('#modal').modal('hide');
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: '操作成功',
+	            		    		});
+	               		    	}
+	               		    	else if(result =="failed"){
+	               		    		$.alert({
+	            		    		    title: '提示',
+	            		    		    content: '操作失败',
+	            		    		});
+	               		    	}
+	               		    }
+               		  	});
+               		  	 ev.preventDefault();
+				})
+
+
+				  function getIdSelections() {
+							return $.map($('#table').bootstrapTable('getSelections'), function (row) {
+								return row.id;
+							});
+    			  }
+
+   				  })//  ready end
+
+   				  function blacklistFormatter(data){
+
+					    if(data == 'BlackList')
+				  			return '黑名单';
+					    else if(data == 'WhiteList')
+					        return '白名单';
+                        else if(data == 'DynaminFaceRepo')
+                            return '动态底库';
+				  }
+				  function snapFormatter(data){
+				  		return data == true?'抓拍':'不抓拍';
+				  }
+	              function detailFormatter(index,row){
+                       var html = [];
+                       html.push('<p>每帧最多抓拍人脸数:<b>'+row.maxfaceNum+'</b></p>');
+                       html.push('<p>最小人脸像素:<b>'+row.minFaceSize+'px</b></p>');
+                       html.push('<p>人脸数据保存天数:<b>'+row.preserveDays+'天</b></p>');
+                       html.push('<p>抓拍人脸质量阈值:<b>'+row.faceQualityThreshold+'</b></p>');
+                       html.push('<p>抓拍间隔:<b>'+row.snapInterval+'毫秒</b></p>');
+                       html.push('<p>陌生人重试次数:<b>'+row.retryCounts+'次</b></p>');
+                       html.push('<p>识别入库间隔:<b>'+row.intervals+'秒</b></p>');
+                       html.push('<p>禁止多人检测::<b>'+row.forbidMultiFace+'</b></p>');
+                       return html;
+		           }
+		</script>
+
+</div>
+</html>

@@ -1,0 +1,135 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout/layout" >
+<div layout:fragment="sidebar" th:replace="layout/sidebar">
+</div>
+<div layout:fragment="content" th:fragment="content">
+		<!-- #section:elements.form -->
+	<div class="row">
+		<div class="col-sm-8" style="margin-left:50px">
+			<div style=" width: 7%; float: left; text-align: left; padding-top: 0.5%;">
+				<span style="  font-size: 15px;">人脸库：</span>
+			</div>
+			<div style="float: right; width: 93%;">
+				<select class="chosen-select form-control" name="facesetToken"></select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="row">
+				<div class="col-sm-8" style="margin-left:50px">
+					<div class="widget-box widget-color-blue2">
+						<div class="widget-header">
+							<h4 class="widget-title lighter smaller">文件夹列表</h4>
+						</div>
+						<div class="widget-body">
+							<div class="widget-main padding-8">
+								<ul id="tree1"></ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<button class="btn btn-primary" style="float:right;margin-right:31%">保存</button>
+			</div>
+		</div><!-- /.col -->
+	</div>
+		<script type="text/javascript">
+	 $.ajaxSetup({ cache: false });
+	 $.getJSON('getFaceset',function(json){
+			$(json.facesets).each(function(index,data){
+					var optionvalue = "<option value="+data.token+">"+data.name+"</option>";
+					 $(optionvalue).appendTo($('select[name="facesetToken"]'));
+
+			})
+	 })
+	 $(function(){
+		 $.post('/faceset/getSubFile', function(data){
+		 	    var tree_data = new Object();
+				for(var node in data){
+		             var text = data[node];
+		             var obj = new Object();
+		        	 obj.text =  data[node];
+		        	 obj.type = 'folder';
+		        	 tree_data[text] = obj;
+		        }
+				var dataSource = function(options, callback){
+				var $data = null;
+				var  $param =null;
+				if(!("text" in options)){
+					$data = tree_data;//the root tree
+					callback({ data: $data });
+					return;
+				}else if("type" in options && options.type == 'folder'){
+					<!--$data = options.children || {};-->
+					$param = options.text;
+				}else{
+					$data = {}//no data
+				}
+				if ($param != null) {
+                    $.ajax({
+                        url: 'getSubFile',
+                        data: 'filepath=' + $param,
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function (response) {
+                            var data = new Object();
+							for(var node in response){
+								 var text = response[node];
+								 var obj = new Object();
+								 obj.text =  response[node];
+								 obj.type = 'folder';
+								 data[text] = obj;
+							}
+                                callback({ data: data })
+                        },
+                        error: function (response) {
+                            //console.log(response);
+                        }
+                    })
+                }
+				if($data != null)
+					callback({ data: $data });
+			}
+
+			$('#tree1').ace_tree({
+				dataSource: dataSource,
+				multiSelect: false,
+				cacheItems: false,
+				<!--'open-icon' : 'ace-icon tree-minus',-->
+				<!--'close-icon' : 'ace-icon tree-plus',-->
+				'itemSelect' : true,
+				'folderSelect': true,
+				'selected-icon' : 'ace-icon fa fa-check',
+				'unselected-icon' : 'ace-icon fa fa-check',
+				 loadingHTML : '<div class="tree-loading"><i class="ace-icon fa fa-refresh fa-spin blue"></i></div>'
+			});
+			 $(".icon-caret").addClass("fa-minus-square-o");
+		 },'json')
+
+			 $(".btn.btn-primary").click(function(){
+			 		 if($("#tree1").tree("selectedItems").length == 0){
+			 		 	 $.alert("请选择文件夹","提示");
+			 		 	 return;
+			 		 }
+			 		 var faceset = $("select").val();
+			 		 if(faceset == ""){
+			 		 	 $.alert("请选择人脸库","提示");
+			 		 	 return;
+			 		 }
+			 		 var filepath = $("#tree1").tree("selectedItems")[0].filepath;
+			 		 $.post(
+			 		 		'test',
+			 		 		{
+			 		 		filepath:filepath,
+							faceset : faceset
+			 		 		},
+			 				 function(data){
+			 		 			$.alert("提交成功","提示");
+			 		 },'text')
+
+			 })
+	})
+
+		</script>
+</div>
+</body>
+</html>

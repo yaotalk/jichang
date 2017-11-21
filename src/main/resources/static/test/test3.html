@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="/bootstrap-table/bootstrap-table.min.css" />
+		
+		
+		<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="../font-awesome/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap-timepicker.css" />
+		<link rel="stylesheet" href="../bootstrap/css/bootstrapValidator.css" />
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap-multiselect.css" />
+		<link rel="stylesheet" href="../bootstrap/css/ladda-themeless.min.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="/ace/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
+		<link rel="stylesheet" href="/ace/css/ace-fonts.min.css" />
+		<!-- page specific plugin styles -->
+		<link rel="stylesheet" href="/jquery.confirm/jquery-confirm.min.css" />
+		<link rel="stylesheet" href="/bootstrap-table/bootstrap-table.min.css" />
+		
+		<!-- basic scripts -->
+
+		<script src="/jquery/jquery.min.js"></script>
+		<script src="/bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="/bootstrap-table/bootstrap-table.min.js"></script>
+	</head>
+	<body>
+	
+		<div>
+		
+		<table id="faceset_table" class="table table-bordered table-hover" data-toggle="table" data-url="/faceset/getFaceset.json" data-data-field="facesets">
+			<thead>
+				<tr>
+					<th data-checkbox=true class="center">
+					</th>
+					<th class="detail-col">详情</th>
+					<th data-field="token">ID</th>
+					<th data-field="name">名称</th>
+					<th data-field="faceCount" class="hidden-480">人脸数</th>
+					<th data-field="createTime">
+						<i class="ace-icon fa fa-clock-o bigger-110 hidden-480"></i>
+						创建时间
+					</th>
+					<th class="hidden-480">状态</th>
+				</tr>
+			</thead>
+		</table>
+		</div>
+	</body>
+	
+	<script type="text/javascript">
+		//$('#faceset_table').bootstrapTable();
+	 	
+	</script>
+</html>

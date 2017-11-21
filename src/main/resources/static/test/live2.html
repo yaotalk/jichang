@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style type="text/css">
+			div.pos {
+				border: 1px solid red;
+				position: absolute;
+			}
+		</style>
+	</head>
+	<body style="margin: 0px">
+		<script type='text/javascript' src='jwplayer.js'></script>
+		<div id='mediaspace'>This text will be replaced</div>
+		<script type='text/javascript'>
+		  jwplayer('mediaspace').setup({
+		    'flashplayer': 'player.swf',
+		    'file': 'hello',
+		    'streamer': 'rtmp://localhost/oflaDemo',
+		    'controlbar': 'bottom',
+		    'width': '848',
+		    'height': '360'
+		  });
+		</script>
+	</body>
+</html>
